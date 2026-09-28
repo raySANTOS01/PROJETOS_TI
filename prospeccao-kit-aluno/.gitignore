@@ -1,0 +1,9 @@
+.env.local
+.env
+node_modules/
+saidas/*.csv
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# a chave é sua e mora só aqui

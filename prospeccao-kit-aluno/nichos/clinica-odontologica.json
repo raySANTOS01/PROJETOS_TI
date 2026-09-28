@@ -1,0 +1,94 @@
+{
+  "nicho": "clinica-odontologica",
+  "rotulo": "Clínicas e consultórios odontológicos",
+  "termos": [
+    "clínica odontológica",
+    "dentista",
+    "consultório odontológico",
+    "clínica de implante dentário",
+    "ortodontia aparelho",
+    "odontologia estética"
+  ],
+  "pracas_sugeridas": [
+    "Belo Horizonte MG",
+    "Rio de Janeiro RJ",
+    "São Paulo SP",
+    "Curitiba PR",
+    "Goiânia GO"
+  ],
+  "pesos": {
+    "site_vivo": 25,
+    "instagram": 20,
+    "whatsapp": 15,
+    "email": 10,
+    "telefone": 10,
+    "reputacao": 10,
+    "cnpj": 5,
+    "linkedin": 0,
+    "endereco": 5
+  },
+  "requisitos": {
+    "avaliacoes_min": 16,
+    "avaliacoes_max": 349,
+    "exige_celular": true,
+    "exige_site": false,
+    "seguidores_min": null,
+    "seguidores_max": null
+  },
+  "observacao_requisitos": "requisitos ELIMINAM (o score só ordena quem passou): entre 16 e 349 avaliações — abaixo disso a empresa mal existe no Google, acima já tem marketing rodando e é venda difícil; celular obrigatório (fixo, 0800 e número repetido em várias empresas não passam — vale o do Maps, o do WhatsApp ou o do site). exige_site fica false de propósito: ter ou não ter site é tag (situacao_site), porque quem não tem site é outra venda, não um lead ruim.",
+  "observacao": "⭐ Os pesos deste nicho NÃO são os padrão, e é de propósito — serve de exemplo de que a régua é de quem prospecta. Clínica odontológica vive de Instagram e agenda por WhatsApp: Instagram subiu de 15 para 20 e WhatsApp de 10 para 15. E-mail caiu de 15 para 10, porque paciente não manda e-mail para marcar consulta. LinkedIn foi a ZERO: clínica de bairro não tem página de empresa, e pontuar isso só puniria lead bom. Soma 100 igual ao padrão. aderencia.confirma diz o que é do nicho; descarta_forte é identidade que vence a confirmação (loja de material odontológico tem a palavra odontológico e não é cliente); descarta só decide quando não houve confirmação.",
+  "aderencia": {
+    "confirma": [
+      "odontolog",
+      "dentista",
+      "dentária",
+      "dentário",
+      "implante dentario",
+      "ortodont",
+      "clareamento dental",
+      "saúde bucal",
+      "aparelho dental"
+    ],
+    "descarta_forte": [
+      "material odontológico",
+      "materiais odontológicos",
+      "produtos odontológicos",
+      "equipamentos odontológicos",
+      "distribuidora de material",
+      "laboratório de prótese",
+      "formar profissionais",
+      "cursos presenciais",
+      "cursos online",
+      "cursos de pós-graduação",
+      "pós-graduação em odontologia",
+      "escola de",
+      "faculdade de",
+      "software para clínicas",
+      "sistema de gestão para clínicas",
+      "marketplace",
+      "operadora de plano",
+      "rede de clínicas",
+      "rede de clinicas",
+      "franquia",
+      "unidades em todo o brasil",
+      "clínica popular",
+      "clinica popular",
+      "sorridents",
+      "oral sin",
+      "odontocompany",
+      "sousmile"
+    ],
+    "descarta": [
+      "clínica veterinária",
+      "veterinário",
+      "medicina estética",
+      "dermatologia",
+      "fisioterapia",
+      "oftalmolog",
+      "plano de saúde",
+      "salão de beleza",
+      "farmácia",
+      "hospital geral"
+    ]
+  }
+}

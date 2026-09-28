@@ -1,0 +1,78 @@
+{
+  "nicho": "energia-solar",
+  "rotulo": "Energia solar (integradoras e instaladoras)",
+  "termos": [
+    "empresa de energia solar",
+    "energia solar fotovoltaica",
+    "instalação de painel solar",
+    "integradora de energia solar",
+    "energia solar residencial",
+    "placas solares"
+  ],
+  "pracas_sugeridas": [
+    "Rio de Janeiro RJ",
+    "Niterói RJ",
+    "Nova Iguaçu RJ",
+    "Duque de Caxias RJ",
+    "Campos dos Goytacazes RJ"
+  ],
+  "pesos": {
+    "site_vivo": 25,
+    "instagram": 15,
+    "email": 15,
+    "telefone": 10,
+    "whatsapp": 10,
+    "reputacao": 10,
+    "cnpj": 5,
+    "linkedin": 5,
+    "endereco": 5
+  },
+  "requisitos": {
+    "avaliacoes_min": 16,
+    "avaliacoes_max": 349,
+    "exige_celular": true,
+    "exige_site": false,
+    "seguidores_min": null,
+    "seguidores_max": null
+  },
+  "observacao_requisitos": "requisitos ELIMINAM (o score só ordena quem passou): entre 16 e 349 avaliações — abaixo disso a empresa mal existe no Google, acima já tem marketing rodando e é venda difícil; celular obrigatório (fixo, 0800 e número repetido em várias empresas não passam — vale o do Maps, o do WhatsApp ou o do site). exige_site fica false de propósito: ter ou não ter site é tag (situacao_site), porque quem não tem site é outra venda, não um lead ruim.",
+  "observacao": "Pesos iguais ao padrão. Editar aqui muda a régua só deste nicho — não precisa tocar em código. aderencia.confirma diz o que é do nicho; descarta_forte é identidade que vence a confirmação (escola de energia solar não é integradora); descarta só decide quando não houve confirmação.",
+  "aderencia": {
+    "confirma": [
+      "solar",
+      "fotovolt",
+      "painel solar",
+      "placa solar",
+      "energia renovavel",
+      "energias renovaveis"
+    ],
+    "descarta_forte": [
+      "formar profissionais",
+      "cursos presenciais",
+      "cursos online",
+      "escola de",
+      "plataforma de e-commerce",
+      "marketplace",
+      "materiais de construcao",
+      "material de construcao",
+      "home center",
+      "distribuidora de equipamentos",
+      "distribuidor de equipamentos",
+      "distribuidora de energia solar",
+      "energia solar por assinatura",
+      "assinatura de energia",
+      "geração compartilhada",
+      "geracao compartilhada",
+      "franquia",
+      "unidades em todo o brasil"
+    ],
+    "descarta": [
+      "imobiliaria",
+      "inadimplencia",
+      "persianas",
+      "seguros",
+      "contabilidade",
+      "seguranca eletronica"
+    ]
+  }
+}

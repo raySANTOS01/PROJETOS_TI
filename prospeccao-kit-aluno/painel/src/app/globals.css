@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   A cara do painel. Para pôr a da sua marca, troque as cores deste bloco:
+   destaque (botões, nota, links), fundo, texto e apagado (textos secundários).
+   As fontes vêm do layout.tsx (next/font). Guia: docs/o-painel.md.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-destaque: #FA4200;
+  --color-fundo: #0D0900;
+  --color-texto: #ECECEC;
+  --color-apagado: #B5B5B5;
+
+  --color-superficie: #12100D;
+  --color-card: #161008;
+  --color-borda: #2A1F10;
+  --color-borda-forte: #3D2D18;
+
+  --font-titulo: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-corpo: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body {
+  background: var(--color-fundo);
+  color: var(--color-texto);
+  font-family: var(--font-corpo);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .titulo {
+  font-family: var(--font-titulo);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-fundo); }
+::-webkit-scrollbar-thumb { background: var(--color-borda-forte); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-destaque); }
+
+/* Campos de formulario — um estilo so para o painel inteiro */
+.campo {
+  width: 100%;
+  background: var(--color-fundo);
+  border: 1px solid var(--color-borda);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: var(--color-texto);
+  outline: none;
+  transition: border-color .15s;
+}
+.campo:focus { border-color: var(--color-destaque); }
+.campo::placeholder { color: #6b6257; }
+.campo:disabled { opacity: .5; }
+
+.rotulo {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-apagado);
+  margin-bottom: 6px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 4px; font-weight: 700; font-size: 14px; padding: 10px 20px;
+  cursor: pointer; transition: filter .15s, background .15s; white-space: nowrap;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primario { background: var(--color-destaque); color: var(--color-fundo); border: none; }
+.btn-primario:hover:not(:disabled) { filter: brightness(1.12); }
+.btn-outline { background: transparent; color: var(--color-destaque); border: 1.5px solid var(--color-destaque); }
+.btn-outline:hover:not(:disabled) { background: color-mix(in srgb, var(--color-destaque) 12%, transparent); }
+.btn-neutro { background: transparent; color: var(--color-apagado); border: 1px solid var(--color-borda-forte); }
+.btn-neutro:hover:not(:disabled) { color: var(--color-texto); border-color: var(--color-apagado); }
+
+.cartao {
+  background: var(--color-card);
+  border: 1px solid var(--color-borda);
+  border-radius: 8px;
+}
+
+.acento { width: 48px; height: 3px; background: var(--color-destaque); }

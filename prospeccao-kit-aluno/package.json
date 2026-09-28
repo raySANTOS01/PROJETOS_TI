@@ -1,0 +1,8 @@
+{
+  "name": "prospeccao-kit-aluno",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Geracao e enriquecimento de leads: Google Maps + visita ao site + score",
+  "dependencies": { "pg": "^8.13.1" }
+}
