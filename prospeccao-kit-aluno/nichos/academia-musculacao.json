@@ -1,0 +1,63 @@
+{
+  "nicho": "academia-musculacao",
+  "rotulo": "Academias de musculação",
+  "termos": [
+    "academia de musculação",
+    "academia",
+    "personal trainer",
+    "academia perto de mim",
+    "academia fitness",
+    "centro de treinamento"
+  ],
+  "pracas_sugeridas": [
+    "Fortaleza CE"
+  ],
+  "pesos": {
+    "site_vivo": 0,
+    "instagram": 25,
+    "whatsapp": 20,
+    "email": 10,
+    "telefone": 15,
+    "reputacao": 20,
+    "cnpj": 5,
+    "linkedin": 0,
+    "endereco": 5
+  },
+  "requisitos": {
+    "avaliacoes_min": 6,
+    "avaliacoes_max": 100,
+    "exige_celular": true,
+    "exige_site": false,
+    "seguidores_min": null,
+    "seguidores_max": null
+  },
+  "observacao_requisitos": "requisitos ELIMINAM: entre 6 e 100 avaliações — abaixo disso a academia mal tem presença no Google, acima já é grande ou tem agência própria. Celular obrigatório (abordagem por WhatsApp). exige_site fica false de propósito: quem não tem site é o alvo da venda, não um lead ruim.",
+  "observacao": "Vende site para academia (não sistema de agendamento). Pesos fora do padrão de propósito: site_vivo foi a ZERO porque o alvo é justamente quem NÃO tem site — pontuar isso puniria o lead certo. O peso saiu para Instagram (25) e reputação (20), os sinais que mostram se a academia está viva e é do porte certo mesmo sem site. Anúncio ativo na Meta não muda a oportunidade neste nicho (o dono não considera relevante). Sem exigência de seguidores mínimo/máximo.",
+  "aderencia": {
+    "confirma": [
+      "musculaç",
+      "academia",
+      "personal trainer",
+      "treino",
+      "fitness",
+      "hipertrofia"
+    ],
+    "descarta_forte": [
+      "loja de suplementos",
+      "distribuidora de equipamentos",
+      "fabricante de equipamentos",
+      "smart fit",
+      "bio ritmo",
+      "bluefit"
+    ],
+    "descarta": [
+      "crossfit",
+      "estúdio de pilates",
+      "escola de dança",
+      "escola de natação",
+      "fisioterapia",
+      "clube recreativo",
+      "spa"
+    ]
+  }
+}
