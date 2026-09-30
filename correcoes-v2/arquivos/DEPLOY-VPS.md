@@ -5,7 +5,7 @@ Nada fica público: a única porta aberta pra internet é a do WireGuard (51820/
 Dentro da VPN a VPS tem o endereço **10.10.0.1**, e é por ele que tudo é acessado.
 
 Este guia assume que o repositório **já tem as correções** (seed só com admin, `db:deploy`,
-`backup.js` com modos diário/horário, `backup-enviar.sh`, `server.js`, `auth.middleware.js`
+`backup.js` com modos diário/horário, `backup-enviar.sh`, e `server.js`, `auth.middleware.js`
 e `upload.middleware.js` corrigidos). Se não tiver, **não comece**: o seed antigo criaria
 contas com senhas fracas e contas desativadas continuariam acessando.
 
@@ -257,7 +257,7 @@ sudo sysctl --system
 ```nginx
 server {
     listen 10.10.0.1:80;
-    server_name _;
+    server_name _;           # para usar um nome no lugar do IP, veja a seção 18
 
     root /home/deploy/hapvida-ranking/client/dist;
     index index.html;
@@ -401,6 +401,7 @@ Faça esta seção **depois** que o sistema estiver no ar e validado. Enquanto i
 - [ ] Restauração testada num banco de teste (seção 12.4) *(depois da seção 12)*
 - [ ] Apagar a venda de teste com `npm run limpar-vendas` (**não** o `limpar-tudo`) antes de liberar pro time
 - [ ] Testar `ssh deploy@10.10.0.1` com a VPN ligada e **só então** fechar o SSH público: `sudo ufw delete allow 22/tcp`
+- [ ] *(opcional, seção 18)* Nome no lugar do IP funcionando, com o IP ainda como plano B
 
 ## 15. Atualizar depois (layout, correções)
 
@@ -475,3 +476,57 @@ de expediente).
 2. Desative ou apague a conta dele no painel admin. O acesso cai na hora.
 
 As duas ações são independentes: faça as duas.
+
+## 18. Nome no lugar do IP (opcional)
+
+Em vez de `http://10.10.0.1`, o vendedor pode abrir algo como
+`http://sistema.vidasaude.com.br`. **Não precisa refazer o build do front**: ele usa endereço
+relativo (`/api`), então funciona com qualquer nome. Só mudam o DNS, o Nginx e o `CLIENT_URL`.
+
+**O que você precisa:** um domínio seu (ex.: `vidasaude.com.br`; um `.com.br` custa cerca de
+R$ 40/ano, ou use um subdomínio de um domínio que a corretora já tenha). Um nome solto, sem
+domínio, não funciona na internet.
+
+1. **DNS do domínio:** crie um registro apontando o nome para o IP da VPN.
+
+   | Tipo | Nome | Valor |
+   |---|---|---|
+   | A | `sistema` | `10.10.0.1` |
+
+   É seguro apontar um nome público para um IP privado: quem não estiver na VPN resolve o
+   nome, mas não consegue conectar.
+
+2. **Nginx** (`/etc/nginx/sites-available/vidasaude`): troque o `server_name`.
+   ```nginx
+   server_name sistema.vidasaude.com.br;
+   ```
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+3. **`server/.env`:** o `CLIENT_URL` precisa bater **exatamente** com o endereço digitado no
+   navegador, senão o CORS bloqueia. Mantenha os dois para o IP continuar funcionando:
+   ```ini
+   CLIENT_URL="http://sistema.vidasaude.com.br,http://10.10.0.1"
+   ```
+   ```bash
+   pm2 restart vidasaude --update-env
+   ```
+
+4. O vendedor abre `http://sistema.vidasaude.com.br` **com a VPN ligada**.
+
+**Cuidados**
+
+- Continua abrindo **só com a VPN ligada**, igual ao IP.
+- Alguns roteadores bloqueiam nomes públicos que apontam para IP privado ("DNS rebinding").
+  Se o nome não abrir numa rede mas o IP abrir, é isso: use o IP como plano B.
+- **Sem domínio:** dá para criar um nome interno (ex.: `vidasaude.interno`) com um DNS próprio
+  (`dnsmasq`) na VPS e `DNS = 10.10.0.1` na config do WireGuard de cada aparelho. Funciona, mas
+  dá mais trabalho e todas as consultas de DNS dos aparelhos passam pela VPS.
+- **HTTPS (cadeado):** com um domínio dá para emitir um certificado válido (Let's Encrypt pelo
+  método de validação por DNS) mesmo com IP privado. O tráfego já vai cifrado pelo WireGuard,
+  então é um extra; serve, por exemplo, para recursos do navegador que exigem HTTPS (câmera).
+  Se adotar, troque o `CLIENT_URL` para `https://...`.
+- **Endereço da VPN:** o `Endpoint` do WireGuard (o IP **público** da VPS) também pode ser um
+  nome, por exemplo `vpn.vidasaude.com.br`. Se você trocar de VPS, só muda o DNS e os aparelhos
+  continuam funcionando sem reconfigurar.

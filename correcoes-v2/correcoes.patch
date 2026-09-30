@@ -10,7 +10,7 @@ index 8784dfe..10272ba 100644
 +# dumps de banco e backups nunca vao pro Git
 +*.sql
 diff --git a/DEPLOY-VPS.md b/DEPLOY-VPS.md
-index 8771c03..dd89dbb 100644
+index 8771c03..6e3622b 100644
 --- a/DEPLOY-VPS.md
 +++ b/DEPLOY-VPS.md
 @@ -4,7 +4,41 @@ Arquitetura: VPS Ubuntu 24.04 → firewall (ufw) → WireGuard → Nginx → Nod
@@ -19,7 +19,7 @@ index 8771c03..dd89dbb 100644
  
 -## 1. Usuário e sistema
 +Este guia assume que o repositório **já tem as correções** (seed só com admin, `db:deploy`,
-+`backup.js` com modos diário/horário, `backup-enviar.sh`, `server.js`, `auth.middleware.js`
++`backup.js` com modos diário/horário, `backup-enviar.sh`, e `server.js`, `auth.middleware.js`
 +e `upload.middleware.js` corrigidos). Se não tiver, **não comece**: o seed antigo criaria
 +contas com senhas fracas e contas desativadas continuariam acessando.
 +
@@ -229,13 +229,13 @@ index 8771c03..dd89dbb 100644
  
 -**Guarde `DADOS_SENSIVEIS_CHAVE` fora da VPS** (gerenciador de senhas). Sem ela, CPFs,
 -documentos e backups ficam ilegíveis pra sempre - inclusive se a VPS morrer.
--
--O cliente não precisa de `.env` na VPS: o build usa `client/.env.production`, que já vem no Git.
 +- O servidor **recusa subir** sem `JWT_SECRET` ou sem `DADOS_SENSIVEIS_CHAVE`.
 +- O cliente não precisa de `.env` na VPS: o build usa `client/.env.production`, que já vem no Git
 +  (URLs relativas: o navegador fala com o Nginx, que repassa `/api`, `/uploads` e `/socket.io` ao Node).
 +- Mais de um admin: `SEED_ADMIN_2_NOME/EMAIL/SENHA` e assim por diante (até 10).
  
+-O cliente não precisa de `.env` na VPS: o build usa `client/.env.production`, que já vem no Git.
+-
 -## 7. Banco (tabelas) e admin
 +## 9. Tabelas e admin
  
@@ -284,6 +284,15 @@ index 8771c03..dd89dbb 100644
  (sem isso o Nginx falha no boot se subir antes da interface da VPN)
  
  `/etc/nginx/sites-available/vidasaude`:
+@@ -172,7 +257,7 @@ sudo sysctl --system
+ ```nginx
+ server {
+     listen 10.10.0.1:80;
+-    server_name _;
++    server_name _;           # para usar um nome no lugar do IP, veja a seção 18
+ 
+     root /home/deploy/hapvida-ranking/client/dist;
+     index index.html;
 @@ -190,6 +275,7 @@ server {
          proxy_set_header Host $host;
          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -292,7 +301,7 @@ index 8771c03..dd89dbb 100644
      }
  
      location /socket.io/ {
-@@ -211,43 +297,181 @@ sudo chmod o+x /home/deploy          # Nginx precisa atravessar a pasta até o d
+@@ -211,43 +297,236 @@ sudo chmod o+x /home/deploy          # Nginx precisa atravessar a pasta até o d
  sudo nginx -t && sudo systemctl restart nginx
  ```
  
@@ -360,7 +369,8 @@ index 8771c03..dd89dbb 100644
 +- **Horário (8h–19h, seg–sáb):** só o `.sql` (guarda 72 em `backups/horario/`), e envia de forma incremental os arquivos de clientes para `arquivos/` no R2.
 +- O script usa `flock` (um backup por vez) e sai com erro se algo falhar. Confira o `backup.log` nos primeiros dias.
 +- Envia com `rclone copy` (nunca `sync`): apagar algo local não apaga no R2.
-+
+ 
+-## 11. Checklist
 +### 12.4 Teste a restauração (obrigatório, pelo menos uma vez)
 +
 +```bash
@@ -386,8 +396,7 @@ index 8771c03..dd89dbb 100644
 +   pm2 logs vidasaude --lines 20      # falhas aparecem como "[email] Falha ao enviar"
 +   ```
 +   Se a porta 587 estiver bloqueada (`nc -zv smtp.gmail.com 587` falha), use `SMTP_PORT="465"`.
- 
--## 11. Checklist
++
 +## 14. Checklist de validação
  
  - [ ] VPN ligada, `http://10.10.0.1` abre a tela de login
@@ -402,6 +411,8 @@ index 8771c03..dd89dbb 100644
 -- [ ] Restaurar esse backup num banco de teste pelo menos uma vez
 -- [ ] Apagar a venda de teste (`npm run limpar-vendas`) antes de liberar pro time
 -- [ ] Fechar o SSH público
+-
+-## Atualizar depois (layout, correções)
 +- [ ] Aprovar uma venda de teste e ver a TV atualizar sozinha (testa o socket pelo Nginx)
 +- [ ] Desativar um corretor logado derruba o acesso dele na hora
 +- [ ] "Esqueci a senha" entrega o código por e-mail *(depois da seção 13)*
@@ -410,8 +421,8 @@ index 8771c03..dd89dbb 100644
 +- [ ] Restauração testada num banco de teste (seção 12.4) *(depois da seção 12)*
 +- [ ] Apagar a venda de teste com `npm run limpar-vendas` (**não** o `limpar-tudo`) antes de liberar pro time
 +- [ ] Testar `ssh deploy@10.10.0.1` com a VPN ligada e **só então** fechar o SSH público: `sudo ufw delete allow 22/tcp`
- 
--## Atualizar depois (layout, correções)
++- [ ] *(opcional, seção 18)* Nome no lugar do IP funcionando, com o IP ainda como plano B
++
 +## 15. Atualizar depois (layout, correções)
  
  No seu PC: altera, testa com `npm run dev`, faz commit e push. Na VPS:
@@ -492,6 +503,60 @@ index 8771c03..dd89dbb 100644
 +2. Desative ou apague a conta dele no painel admin. O acesso cai na hora.
 +
 +As duas ações são independentes: faça as duas.
++
++## 18. Nome no lugar do IP (opcional)
++
++Em vez de `http://10.10.0.1`, o vendedor pode abrir algo como
++`http://sistema.vidasaude.com.br`. **Não precisa refazer o build do front**: ele usa endereço
++relativo (`/api`), então funciona com qualquer nome. Só mudam o DNS, o Nginx e o `CLIENT_URL`.
++
++**O que você precisa:** um domínio seu (ex.: `vidasaude.com.br`; um `.com.br` custa cerca de
++R$ 40/ano, ou use um subdomínio de um domínio que a corretora já tenha). Um nome solto, sem
++domínio, não funciona na internet.
++
++1. **DNS do domínio:** crie um registro apontando o nome para o IP da VPN.
++
++   | Tipo | Nome | Valor |
++   |---|---|---|
++   | A | `sistema` | `10.10.0.1` |
++
++   É seguro apontar um nome público para um IP privado: quem não estiver na VPN resolve o
++   nome, mas não consegue conectar.
++
++2. **Nginx** (`/etc/nginx/sites-available/vidasaude`): troque o `server_name`.
++   ```nginx
++   server_name sistema.vidasaude.com.br;
++   ```
++   ```bash
++   sudo nginx -t && sudo systemctl reload nginx
++   ```
++
++3. **`server/.env`:** o `CLIENT_URL` precisa bater **exatamente** com o endereço digitado no
++   navegador, senão o CORS bloqueia. Mantenha os dois para o IP continuar funcionando:
++   ```ini
++   CLIENT_URL="http://sistema.vidasaude.com.br,http://10.10.0.1"
++   ```
++   ```bash
++   pm2 restart vidasaude --update-env
++   ```
++
++4. O vendedor abre `http://sistema.vidasaude.com.br` **com a VPN ligada**.
++
++**Cuidados**
++
++- Continua abrindo **só com a VPN ligada**, igual ao IP.
++- Alguns roteadores bloqueiam nomes públicos que apontam para IP privado ("DNS rebinding").
++  Se o nome não abrir numa rede mas o IP abrir, é isso: use o IP como plano B.
++- **Sem domínio:** dá para criar um nome interno (ex.: `vidasaude.interno`) com um DNS próprio
++  (`dnsmasq`) na VPS e `DNS = 10.10.0.1` na config do WireGuard de cada aparelho. Funciona, mas
++  dá mais trabalho e todas as consultas de DNS dos aparelhos passam pela VPS.
++- **HTTPS (cadeado):** com um domínio dá para emitir um certificado válido (Let's Encrypt pelo
++  método de validação por DNS) mesmo com IP privado. O tráfego já vai cifrado pelo WireGuard,
++  então é um extra; serve, por exemplo, para recursos do navegador que exigem HTTPS (câmera).
++  Se adotar, troque o `CLIENT_URL` para `https://...`.
++- **Endereço da VPN:** o `Endpoint` do WireGuard (o IP **público** da VPS) também pode ser um
++  nome, por exemplo `vpn.vidasaude.com.br`. Se você trocar de VPS, só muda o DNS e os aparelhos
++  continuam funcionando sem reconfigurar.
 diff --git a/server/backup-enviar.sh b/server/backup-enviar.sh
 new file mode 100755
 index 0000000..76e9739
@@ -542,136 +607,3 @@ index 0000000..76e9739
 +  done
 +fi
 +echo "[$(date '+%F %T')] Backup $MODO concluido."
-diff --git a/server/src/middlewares/auth.middleware.js b/server/src/middlewares/auth.middleware.js
-index d87d15e..0e26d39 100644
---- a/server/src/middlewares/auth.middleware.js
-+++ b/server/src/middlewares/auth.middleware.js
-@@ -5,7 +5,7 @@
- import jwt from 'jsonwebtoken';
- import { prisma } from '../prismaClient.js';
- 
--export function autenticar(req, res, next) {
-+export async function autenticar(req, res, next) {
-   const authHeader = req.headers.authorization;
- 
-   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-@@ -16,7 +16,16 @@ export function autenticar(req, res, next) {
- 
-   try {
-     const payload = jwt.verify(token, process.env.JWT_SECRET);
--    req.corretorId = payload.corretorId;
-+    // Confere no banco (nao so no token, que vale ate 30 dias): conta
-+    // desativada, rejeitada ou removida perde o acesso na hora.
-+    const corretor = await prisma.corretor.findUnique({
-+      where: { id: payload.corretorId },
-+      select: { id: true, ativo: true, status: true },
-+    });
-+    if (!corretor || !corretor.ativo || corretor.status !== 'APROVADO') {
-+      return res.status(401).json({ erro: 'Sessao expirada ou invalida. Faca login novamente.' });
-+    }
-+    req.corretorId = corretor.id;
-     next();
-   } catch (erro) {
-     return res.status(401).json({ erro: 'Sessao expirada ou invalida. Faca login novamente.' });
-diff --git a/server/src/middlewares/upload.middleware.js b/server/src/middlewares/upload.middleware.js
-index 642ca2f..acc0058 100644
---- a/server/src/middlewares/upload.middleware.js
-+++ b/server/src/middlewares/upload.middleware.js
-@@ -11,12 +11,22 @@ if (!fs.existsSync(PASTA_UPLOADS)) {
- }
- 
- const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
-+
-+// A extensao do arquivo salvo vem do tipo validado, NUNCA do nome enviado
-+// pelo cliente - senao um "x.html" com tipo image/png seria salvo e
-+// servido como pagina HTML pela pasta /uploads.
-+const EXTENSAO_POR_TIPO = {
-+  'image/jpeg': '.jpg',
-+  'image/png': '.png',
-+  'image/webp': '.webp',
-+  'application/pdf': '.pdf',
-+};
- const TAMANHO_MAXIMO = 3 * 1024 * 1024; // 3MB
- 
- const armazenamento = multer.diskStorage({
-   destination: (req, file, cb) => cb(null, PASTA_UPLOADS),
-   filename: (req, file, cb) => {
--    const extensao = path.extname(file.originalname).toLowerCase();
-+    const extensao = EXTENSAO_POR_TIPO[file.mimetype];
-     // req.corretorId ja existe aqui porque a rota roda "autenticar" antes deste middleware
-     cb(null, `corretor-${req.corretorId}-${Date.now()}${extensao}`);
-   },
-@@ -65,7 +75,7 @@ const MAX_DOCUMENTOS = 15; // limite de imagens/arquivos por solicitação
- const armazenamentoDocumentos = multer.diskStorage({
-   destination: (req, file, cb) => cb(null, PASTA_DOCUMENTOS),
-   filename: (req, file, cb) => {
--    const extensao = path.extname(file.originalname).toLowerCase();
-+    const extensao = EXTENSAO_POR_TIPO[file.mimetype];
-     // sufixo aleatorio alem do timestamp - varios arquivos do mesmo
-     // envio podem cair no mesmo milissegundo e colidir sem isso
-     const sufixo = Math.random().toString(36).slice(2, 8);
-diff --git a/server/src/server.js b/server/src/server.js
-index 67fdea4..c73e52c 100644
---- a/server/src/server.js
-+++ b/server/src/server.js
-@@ -9,6 +9,7 @@ import path from 'path';
- import jwt from 'jsonwebtoken';
- import { Server as SocketServer } from 'socket.io';
- import { iniciarChecagemPeriodica } from './services/parcelas-atraso.service.js';
-+import { prisma } from './prismaClient.js';
- 
- import authRoutes from './routes/auth.routes.js';
- import corretoresRoutes from './routes/corretores.routes.js';
-@@ -20,6 +21,12 @@ import documentosRoutes from './routes/documentos.routes.js';
- import { setIo } from './socket.js';
- import { montarRanking } from './services/ranking.service.js';
- 
-+// Sem o segredo do JWT nao existe login seguro - melhor recusar a subir
-+// do que descobrir so quando o primeiro usuario tentar entrar.
-+if (!process.env.JWT_SECRET) {
-+  throw new Error('JWT_SECRET nao configurado no .env - defina um segredo forte antes de subir o servidor (ver .env.example).');
-+}
-+
- const app = express();
- const server = http.createServer(app);
- 
-@@ -68,6 +75,15 @@ app.use('/api', (req, res) => {
-   res.status(404).json({ erro: 'Rota nao encontrada.' });
- });
- 
-+// Handler de erro final: sem ele o Express devolve uma pagina HTML com o
-+// stack trace (caminhos do servidor) quando algo lanca erro, ex: CORS.
-+app.use((erro, req, res, next) => {
-+  if (res.headersSent) return next(erro);
-+  const ehCors = erro?.message === 'Origem não permitida pelo CORS.';
-+  if (!ehCors) console.error('Erro nao tratado:', erro);
-+  res.status(ehCors ? 403 : 500).json({ erro: ehCors ? 'Origem nao permitida.' : 'Erro interno do servidor.' });
-+});
-+
- // Socket.io - aceita conexao de qualquer TV/painel autorizado pelo CORS
- const io = new SocketServer(server, {
-   cors: { origin: origemPermitida, methods: ['GET', 'POST'] },
-@@ -80,15 +96,20 @@ setIo(io);
- // So aceita a conexao do socket se vier com um token JWT valido de um
- // corretor logado (email + senha). Sem isso o ranking em tempo real nao
- // fica acessivel a quem so descobrir a URL da TV.
--io.use((socket, next) => {
-+io.use(async (socket, next) => {
-   const token = socket.handshake.auth?.token;
-   if (!token) {
-     return next(new Error('Acesso restrito: token nao informado.'));
-   }
-   try {
-     const payload = jwt.verify(token, process.env.JWT_SECRET);
--    socket.corretorId = payload.corretorId;
--    socket.papel = payload.papel;
-+    // confere no banco: conta desativada/rejeitada perde o acesso na hora
-+    const corretor = await prisma.corretor.findUnique({ where: { id: payload.corretorId } });
-+    if (!corretor || !corretor.ativo || corretor.status !== 'APROVADO') {
-+      return next(new Error('Acesso restrito: conta inativa.'));
-+    }
-+    socket.corretorId = corretor.id;
-+    socket.papel = corretor.papel; // papel atual do banco, nao o do token
-     next();
-   } catch (erro) {
-     next(new Error('Acesso restrito: token invalido ou expirado.'));
