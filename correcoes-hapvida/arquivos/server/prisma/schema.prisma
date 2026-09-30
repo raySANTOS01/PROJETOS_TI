@@ -1,0 +1,326 @@
+// Schema Prisma - Ranking de Vendas Hapvida
+// Banco: MySQL 8 (na VPS, roda na mesma maquina do backend: host "localhost")
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Tipos de plano vendido - define o peso da pontuação
+enum TipoPlano {
+  INDIVIDUAL
+  PME
+  GRANDE_EMPRESA
+  ODONTO // legado - novas solicitacoes usam ODONTO_INDIVIDUAL ou ODONTO_EMPRESA
+  ODONTO_INDIVIDUAL
+  ODONTO_EMPRESA
+}
+
+// Status da venda - permite estorno sem apagar histórico
+enum StatusVenda {
+  ATIVA
+  ESTORNADA
+}
+
+// Papel do usuario no sistema. ADMIN aprova/rejeita novos cadastros de
+// corretor e nao entra no ranking de vendas.
+enum PapelCorretor {
+  ADMIN
+  CORRETOR
+}
+
+// Todo cadastro novo nasce PENDENTE. So aparece no ranking e so consegue
+// fazer login depois que um ADMIN aprova (StatusCorretor = APROVADO).
+enum StatusCorretor {
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
+model Corretor {
+  id                Int            @id @default(autoincrement())
+  nome              String
+  email             String         @unique
+  senhaHash         String // senha criptografada (bcrypt) - usada no cadastro/login
+  fotoUrl           String?
+  metaVidas         Int            @default(0) // definida pelo backoffice (admin), nao pelo proprio corretor
+  metaFaturamento   Float          @default(0) // idem
+  ativo             Boolean        @default(true)
+  papel             PapelCorretor  @default(CORRETOR)
+  status            StatusCorretor @default(PENDENTE)
+  salao             Salao? // null = ainda nao definido (corretores antigos, ate alguem marcar)
+  criadoEm          DateTime       @default(now())
+
+  // Fluxo de "esqueci minha senha": codigo de 6 digitos + expiracao.
+  // Guardado direto no corretor por simplicidade (nao precisa de tabela extra).
+  resetCodigo       String?
+  resetExpiraEm     DateTime?
+  resetTentativas   Int      @default(0)
+
+  // Controle de acesso por pagina. null = usa o padrao do papel (ADMIN
+  // ve tudo, CORRETOR ve so ranking/cadastro/perfil). Quando definido,
+  // é uma lista de chaves de pagina (ver PAGINAS no admin.controller.js)
+  
+  // que SUBSTITUI o padrao - da pra restringir um admin ou liberar mais
+  // pra um corretor especifico.
+  paginasPermitidas Json?
+
+  vendas            Venda[]
+  solicitacoes      Solicitacao[]
+
+  @@map("corretores")
+}
+
+// Meta de vidas do time inteiro (o "salao"), por mes - separada da meta
+// individual de cada corretor. O backoffice define; a TV mostra o
+// progresso.
+model MetaEquipe {
+  id        Int      @id @default(autoincrement())
+  ano       Int
+  mes       Int
+  salao     Salao? // cada salao tem a propria meta - "geral" e a soma dos dois, nunca gravada direto. null = registro antigo (de antes dessa mudanca), nao usado pela logica nova.
+  metaVidas Int
+  criadoEm  DateTime @default(now())
+
+  @@unique([ano, mes, salao])
+  @@map("metas_equipe")
+}
+
+model Venda {
+  id           Int         @id @default(autoincrement())
+  corretorId   Int
+  corretor     Corretor    @relation(fields: [corretorId], references: [id])
+
+  tipoPlano    TipoPlano
+  qtdVidas     Int
+  valorMensal  Float // faturamento mensal da venda
+
+  status       StatusVenda @default(ATIVA)
+  data         DateTime    @default(now())
+  estornadaEm  DateTime?
+
+  adesao       Adesao?
+  solicitacao  Solicitacao?
+
+  @@map("vendas")
+  @@index([corretorId])
+  @@index([status])
+}
+
+enum StatusAdesao {
+  PENDENTE
+  ATIVA
+  CANCELADA
+}
+
+enum StatusParcela {
+  PENDENTE
+  PAGA
+  ATRASADA
+}
+
+// Dados operacionais da adesao (parcelas, vigencia, status). Os dados do
+// cliente (responsavel + beneficiarios) ficam na Solicitacao que originou
+// esta adesao - acessivel via venda.solicitacao. Nao duplicamos aqui pra
+// nao ter dois lugares com CPF/CNPJ criptografado pra manter sincronizados.
+model Adesao {
+  id              Int          @id @default(autoincrement())
+  vendaId         Int          @unique
+  venda           Venda        @relation(fields: [vendaId], references: [id])
+
+  codigoVenda     String?
+  orcamento       Float?
+  cidadeVenda     String
+  vencimento      DateTime
+
+  fonteVenda      String?
+  vigencia        DateTime?
+  odontoIncluso   Boolean @default(false)
+
+  statusAdesao    StatusAdesao @default(PENDENTE)
+
+  // Observacao de pagamento por parcela (ex: "pago via boleto, comprovante
+  // enviado por email"). Um JSON so - { "1": "texto", "3": "texto" } - em
+  // vez de 6 colunas separadas, pra nao inchar a tabela.
+  parcelasObservacoes Json?
+
+  parcela1Status  StatusParcela @default(PENDENTE)
+  parcela1PagaEm  DateTime?
+  parcela2Status  StatusParcela @default(PENDENTE)
+  parcela2PagaEm  DateTime?
+  parcela3Status  StatusParcela @default(PENDENTE)
+  parcela3PagaEm  DateTime?
+  parcela4Status  StatusParcela @default(PENDENTE)
+  parcela4PagaEm  DateTime?
+  parcela5Status  StatusParcela @default(PENDENTE)
+  parcela5PagaEm  DateTime?
+  parcela6Status  StatusParcela @default(PENDENTE)
+  parcela6PagaEm  DateTime?
+
+  criadoEm        DateTime @default(now())
+
+  @@map("adesoes")
+}
+
+enum StatusSolicitacao {
+  PENDENTE
+  ENVIADA_ASSINATURA
+  AGUARDANDO_PAGAMENTO
+  APROVADA
+  REJEITADA
+}
+
+// Salão físico onde o corretor trabalha - só a marcação por enquanto
+// (escolhida no cadastro); a divisão de ranking/analytics por salão
+// fica pra depois, usando esse mesmo campo.
+enum Salao {
+  SALAO_1
+  SALAO_2
+}
+
+// O corretor manda TUDO de uma vez: dados da venda + Responsavel (quem
+// contrata/paga - so contato, nao necessariamente uma vida) + a lista de
+// Beneficiarios (as vidas de fato, sem limite de quantidade). Vira
+// Venda + Adesao de verdade quando o backoffice aprova - so ai conta
+// no ranking (e so depois que a 1a parcela for confirmada paga).
+model Solicitacao {
+  id                        Int               @id @default(autoincrement())
+  corretorId                Int
+  corretor                  Corretor          @relation(fields: [corretorId], references: [id])
+
+  tipoPlano                 TipoPlano
+  qtdVidas                  Int
+  valorMensal                Float
+
+  codigoVenda                String?
+  orcamento                  Float?
+  cidadeVenda                String
+  vencimento                  DateTime
+  vigencia                    DateTime?
+  fonteVenda                  String?
+  odontoIncluso                Boolean @default(false)
+  consentimentoObtido Boolean   @default(false)
+  consentimentoEm     DateTime?
+
+  // --- Responsavel (1:1 com a solicitacao, por isso fica como colunas
+  // aqui, nao vira tabela propria) ---
+  razaoSocial                String?
+  responsavelNome            String
+  responsavelNomeMae         String
+  responsavelDataNascimento  DateTime
+  responsavelEmail           String?
+  responsavelTelefone        String
+  responsavelVinculo         String
+  responsavelEhBeneficiario  Boolean @default(false)
+  empresaCnpjEnc              String?
+
+  // so fazem sentido quando responsavelEhBeneficiario = true
+  responsavelCpfEnc                String?
+  responsavelTipoPlano             String?
+  responsavelCodigoPlano           String?
+  responsavelValor                 Float?
+  responsavelAcomodacao            String?
+  responsavelCoparticipacao        String?
+  responsavelCompraCarencia        Boolean @default(false)
+  responsavelNumeroCarteirinha     String?
+  responsavelPossuiPreexistenteEnc String?
+  responsavelPossuiPreexistenteDescricaoEnc String?
+
+  anexos                     Json?
+
+  titulares                  Titular[]
+  // so usado quando tipoPlano = INDIVIDUAL - dependente pendura direto
+  // aqui, sem titular no meio (ver comentario no model Dependente)
+  dependentes                Dependente[]
+
+  status          StatusSolicitacao @default(PENDENTE)
+  motivoRejeicao  String?
+
+  vendaId         Int?              @unique
+  venda           Venda?            @relation(fields: [vendaId], references: [id])
+
+  criadoEm        DateTime          @default(now())
+  decididoEm      DateTime?
+
+  @@map("solicitacoes")
+  @@index([corretorId])
+  @@index([status])
+}
+
+// So existe no plano EMPRESA - no plano individual nao ha titular, so
+// responsavel + dependentes direto (ver Dependente.solicitacaoId).
+// Um titular sempre conta como vida.
+model Titular {
+  id                    Int         @id @default(autoincrement())
+  solicitacaoId         Int
+  solicitacao           Solicitacao @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)
+
+  cpfEnc                String?
+  nome                  String
+  nomeMae               String
+  dataNascimento        DateTime
+  telefone              String?
+  email                 String?
+  vinculo               String
+
+  tipoPlano             String
+  codigoPlano           String?
+  acomodacao            String
+  coparticipacao        String
+  odontoIncluso         Boolean @default(false)
+  compraCarencia        Boolean @default(false)
+  numeroCarteirinha     String?
+  possuiPreexistenteEnc String?
+  possuiPreexistenteDescricaoEnc String?
+  valor                 Float
+
+  dependentes           Dependente[]
+
+  criadoEm              DateTime @default(now())
+
+  @@map("titulares")
+  @@index([solicitacaoId])
+}
+
+// Um dependente sempre conta como vida. Pendura de UM dos dois jeitos,
+// nunca os dois ao mesmo tempo (regra garantida no backend, nao no
+// banco): titularId preenchido = plano empresa (dependente de um
+// titular); solicitacaoId preenchido = plano individual (dependente
+// direto do responsavel, sem titular no meio - reflete a regra de que
+// plano individual so tem 2 elementos: responsavel e dependentes).
+model Dependente {
+  id                    Int          @id @default(autoincrement())
+  titularId             Int?
+  titular               Titular?     @relation(fields: [titularId], references: [id], onDelete: Cascade)
+  solicitacaoId         Int?
+  solicitacao           Solicitacao? @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)
+
+  cpfEnc                String?
+  nome                  String
+  nomeMae               String
+  dataNascimento        DateTime
+  telefone              String?
+  email                 String?
+  vinculo               String
+
+  tipoPlano             String
+  codigoPlano           String?
+  acomodacao            String
+  coparticipacao        String
+  odontoIncluso         Boolean @default(false)
+  compraCarencia        Boolean @default(false)
+  numeroCarteirinha     String?
+  possuiPreexistenteEnc String?
+  possuiPreexistenteDescricaoEnc String?
+  valor                 Float
+
+  criadoEm              DateTime @default(now())
+
+  @@map("dependentes")
+  @@index([titularId])
+  @@index([solicitacaoId])
+}
