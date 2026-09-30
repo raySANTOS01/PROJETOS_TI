@@ -22,6 +22,14 @@
 // encontrar, defina MYSQLDUMP_PATH no .env com o caminho completo do
 // mysqldump.exe (ou mysqldump, no Linux/Mac).
 //
+// Dois modos (cada um com sua pasta e sua retencao):
+//   node backup.js            -> DIARIO: .sql + .tar.gz (uploads/ e
+//                                documentos-privados/), guarda os ultimos 14
+//   node backup.js --horario  -> HORARIO: so o .sql (rapido e leve), guarda
+//                                os ultimos 72 (~6 dias de expediente).
+//                                Os arquivos de cliente sao enviados a parte,
+//                                de forma incremental (ver backup-enviar.sh).
+//
 // Codigo de saida: 0 = tudo certo; 1 = alguma parte falhou (banco OU
 // arquivos). Assim o cron/monitoramento consegue detectar a falha.
 //
@@ -32,8 +40,11 @@ import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const PASTA_BACKUPS = path.resolve('backups');
-const MANTER_ULTIMOS = 14; // 14 backups diarios = 2 semanas de historico
+const MODO_HORARIO = process.argv.includes('--horario');
+const PASTA_RAIZ = path.resolve('backups');
+const PASTA_BACKUPS = path.join(PASTA_RAIZ, MODO_HORARIO ? 'horario' : 'diario');
+// diario: 14 = 2 semanas. horario: 72 = 12 backups/dia (8h-19h) x 6 dias.
+const MANTER_ULTIMOS = MODO_HORARIO ? 72 : 14;
 
 function lerConexao() {
   const url = process.env.DATABASE_URL;
@@ -127,19 +138,21 @@ function removerSeExiste(arquivo) {
 function backup() {
   const { usuario, senha, host, porta, banco } = lerConexao();
 
-  // pasta e arquivos so pro dono: contem dados de clientes
+  // pastas so pro dono: contem dados de clientes
   fs.mkdirSync(PASTA_BACKUPS, { recursive: true, mode: 0o700 });
-  try {
-    fs.chmodSync(PASTA_BACKUPS, 0o700);
-  } catch {
-    // Windows nao usa permissoes de estilo Unix
+  for (const pasta of [PASTA_RAIZ, PASTA_BACKUPS]) {
+    try {
+      fs.chmodSync(pasta, 0o700);
+    } catch {
+      // Windows nao usa permissoes de estilo Unix
+    }
   }
 
   const agora = new Date();
   const carimbo = agora.toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const arquivoSaida = path.join(PASTA_BACKUPS, `backup-${banco}-${carimbo}.sql`);
 
-  console.log(`Gerando backup de "${banco}"...`);
+  console.log(`Gerando backup ${MODO_HORARIO ? 'horario' : 'diario'} de "${banco}"...`);
 
   let mysqldump;
   try {
@@ -188,7 +201,8 @@ function backup() {
     process.exit(1);
   }
 
-  const arquivosOk = arquivarPastas(carimbo);
+  // no modo horario so o banco: os arquivos vao por envio incremental
+  const arquivosOk = MODO_HORARIO ? true : arquivarPastas(carimbo);
   limparBackupsAntigos();
 
   if (!arquivosOk) process.exit(1);
