@@ -32,7 +32,7 @@ git commit -m "fix: correções de segurança e de deploy para a VPS"
 
 ## Depois de aplicar
 
-1. **Segredos:** as senhas do `seed.js` antigo (`ray123`, `01020304`, `123456`) estão
+1. **Segredos:** as senhas do `seed.js` antigo (as 3 senhas fracas que estavam no arquivo) estão
    no histórico do Git. Considere-as comprometidas; se o repositório for público,
    é melhor recriá-lo sem esse histórico.
 2. **Na VPS**, rode o servidor com `NODE_ENV=production`:
