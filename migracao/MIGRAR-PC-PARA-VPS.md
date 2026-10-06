@@ -53,6 +53,13 @@ não abra com a chave antiga **aborta** sem alterar nada; os documentos novos v�
 paralela, o banco é atualizado numa **única transação**, e só no fim as pastas são trocadas (a original
 fica como `documentos-privados.antigo-*`). Não imprime nenhum dado pessoal.
 
+**Documentos antigos sem cifra:** os documentos enviados **antes** de o sistema passar a cifrar ficam
+em claro na pasta (são JPG/PNG/PDF/WEBP normais). O script reconhece pelo conteúdo e pela extensão,
+e os **cifra com a chave nova**: na simulação aparecem como "SEM cifra (enviados antes da cifragem
+existir)". Hoje o sistema não consegue abrir esses arquivos pela tela (ele tenta decifrar e falha);
+depois da recifragem, passam a abrir. Um arquivo que não é cifrado com a chave antiga **nem** uma
+imagem/PDF reconhecível (corrompido, ou cifrado com outra chave) **aborta** o script e é listado pelo nome.
+
 **Passo a passo (no PC, dentro de `server/`, com o servidor PARADO):**
 
 1. **Backup completo antes de tudo** e uma cópia dele fora da pasta do projeto:
@@ -94,8 +101,10 @@ fica como `documentos-privados.antigo-*`). Não imprime nenhum dado pessoal.
 10. **Teste o sistema** (`npm run dev`): abra uma solicitação com CPF e um documento anexado.
 11. **Guarde a chave nova** no gerenciador de senhas e **gere um backup novo** (`node backup.js`):
     é esse backup que vai para a VPS, e a VPS usa **esta mesma chave nova** no `.env`.
-12. Só depois de tudo conferido, apague a pasta `documentos-privados.antigo-*` (ela está cifrada
-    com a chave **antiga**, que é fraca) e o `.env.example` nunca deve ser usado como chave.
+12. Só depois de tudo conferido, apague a pasta `documentos-privados.antigo-*`: ela tem os documentos
+    cifrados com a chave **antiga** (fraca) e também os documentos **em claro** dos primeiros dias.
+    Os `.tar.gz` antigos em `backups/` têm a mesma pasta antiga dentro: apague os que foram gerados
+    antes da recifragem. O `.env.example` nunca deve ser usado como chave.
 
 **Se der errado:** o banco só muda dentro de uma transação, e a pasta original é preservada. Para
 voltar atrás, restaure o backup do passo 1 (`.sql` e `.tar.gz`) e mantenha a chave antiga no `.env`.

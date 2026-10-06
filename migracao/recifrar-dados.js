@@ -6,8 +6,13 @@
 // SEGURANCA - como o script se protege:
 //   * Por padrao NAO altera nada (simulacao): decifra e recifra tudo em
 //     memoria, confere que o resultado volta igual, e so reporta.
-//   * Se QUALQUER valor ou arquivo nao abrir com a chave antiga, aborta sem
-//     escrever nada (nunca mistura dado cifrado com duas chaves).
+//   * Se QUALQUER valor do banco, ou documento que pareca cifrado, nao abrir com a
+//     chave antiga, aborta sem escrever nada (nunca mistura duas chaves).
+//   * Documentos enviados ANTES de o sistema passar a cifrar ficam em claro (sao
+//     JPG/PNG/PDF/WEBP normais). O script reconhece pelo conteudo + extensao e os
+//     CIFRA com a chave nova (assim passam a ser protegidos e a abrir no sistema).
+//     Arquivo que nao e nem cifrado com a chave antiga nem um desses formatos
+//     reconhecidos faz o script abortar.
 //   * Os documentos novos vao pra uma pasta paralela (documentos-privados.novo),
 //     o banco e atualizado numa transacao unica, e so no fim as pastas sao
 //     trocadas. A pasta original fica guardada como documentos-privados.antigo-*.
@@ -118,23 +123,56 @@ async function planejarBanco({ antiga, nova }) {
   return { plano, total };
 }
 
-// Passo 2: confere (sem gravar) que cada documento abre com a chave antiga e
-// sobrevive a ida e volta com a nova.
+// Passo 2: classifica cada documento (sem gravar):
+//   cifrado  = abre com a chave antiga (formato do sistema atual)
+//   claro    = enviado antes da cifragem existir: JPG/PNG/PDF/WEBP normal
+//   invalido = nao e nenhum dos dois (corrompido, ou cifrado com outra chave)
 function listarDocumentos() {
   if (!fs.existsSync(PASTA_DOCS)) return [];
   return fs.readdirSync(PASTA_DOCS, { withFileTypes: true }).filter((e) => e.isFile()).map((e) => e.name);
 }
 
-function conferirDocumentos(nomes, { antiga, nova }) {
-  for (const nome of nomes) {
-    let claro;
-    try {
-      claro = decifrarBuffer(fs.readFileSync(path.join(PASTA_DOCS, nome)), antiga);
-    } catch {
-      sair(`o documento "${nome}" nao abre com a chave ANTIGA.`);
-    }
-    if (!decifrarBuffer(cifrarBuffer(claro, nova), nova).equals(claro)) sair(`falha de conferencia no documento "${nome}".`);
+function tipoPeloConteudo(buf) {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpeg';
+  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png';
+  if (buf.length >= 5 && buf.subarray(0, 5).toString('latin1') === '%PDF-') return 'pdf';
+  if (buf.length >= 12 && buf.subarray(0, 4).toString('latin1') === 'RIFF' && buf.subarray(8, 12).toString('latin1') === 'WEBP') return 'webp';
+  return null;
+}
+const EXTENSOES = { jpeg: ['.jpg', '.jpeg'], png: ['.png'], pdf: ['.pdf'], webp: ['.webp'] };
+
+function classificarDocumento(nome, antiga) {
+  const buffer = fs.readFileSync(path.join(PASTA_DOCS, nome));
+  try {
+    return { tipo: 'cifrado', claro: decifrarBuffer(buffer, antiga) };
+  } catch {
+    // nao abriu: pode ser um arquivo em claro (legado)
   }
+  const formato = tipoPeloConteudo(buffer);
+  if (formato && EXTENSOES[formato].includes(path.extname(nome).toLowerCase())) return { tipo: 'claro', claro: buffer };
+  return { tipo: 'invalido' };
+}
+
+function conferirDocumentos(nomes, { antiga, nova }) {
+  let cifrados = 0;
+  const emClaro = [];
+  const invalidos = [];
+  for (const nome of nomes) {
+    const r = classificarDocumento(nome, antiga);
+    if (r.tipo === 'invalido') {
+      invalidos.push(nome);
+      continue;
+    }
+    if (!decifrarBuffer(cifrarBuffer(r.claro, nova), nova).equals(r.claro)) sair(`falha de conferencia no documento "${nome}".`);
+    if (r.tipo === 'cifrado') cifrados += 1;
+    else emClaro.push(nome);
+  }
+  if (invalidos.length > 0) {
+    console.error(`\nDocumentos que nao abrem com a chave ANTIGA e tambem nao sao imagem/PDF em claro (${invalidos.length}):`);
+    invalidos.slice(0, 20).forEach((n) => console.error(`   - ${n}`));
+    sair('ha documentos que nao sao cifrados com a chave antiga nem arquivos em claro reconheciveis (corrompidos, ou cifrados com outra chave).');
+  }
+  return { cifrados, emClaro };
 }
 
 async function aplicar(plano, documentos, chaves) {
@@ -144,7 +182,7 @@ async function aplicar(plano, documentos, chaves) {
   fs.mkdirSync(PASTA_NOVA, { recursive: true, mode: 0o700 });
   try {
     for (const nome of documentos) {
-      const claro = decifrarBuffer(fs.readFileSync(path.join(PASTA_DOCS, nome)), chaves.antiga);
+      const { claro } = classificarDocumento(nome, chaves.antiga);
       const novoConteudo = cifrarBuffer(claro, chaves.nova);
       const destino = path.join(PASTA_NOVA, nome);
       fs.writeFileSync(destino, novoConteudo, { mode: 0o600 });
@@ -196,8 +234,10 @@ async function main() {
 
   console.log('\n2) Documentos (documentos-privados/)');
   const documentos = listarDocumentos();
-  conferirDocumentos(documentos, chaves);
-  console.log(`   documentos verificados: ${documentos.length} - todos abrem com a chave antiga`);
+  const { cifrados, emClaro } = conferirDocumentos(documentos, chaves);
+  console.log(`   documentos verificados: ${documentos.length}`);
+  console.log(`   - cifrados com a chave antiga: ${cifrados}`);
+  console.log(`   - SEM cifra (enviados antes da cifragem existir): ${emClaro.length}${emClaro.length ? ' -> serao cifrados com a chave nova' : ''}`);
 
   if (!APLICAR) {
     console.log('\nSimulacao concluida: tudo pode ser recifrado. NADA foi alterado.');
