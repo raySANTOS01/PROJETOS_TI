@@ -51,9 +51,10 @@ sudo timedatectl set-timezone America/Sao_Paulo
 timedatectl | grep "Time zone"
 ```
 
-O fuso importa por dois motivos: o **cron** (horários dos backups) e o **próprio
-sistema**, que usa a hora local do servidor para decidir o mês do ranking e o dia
-de vencimento das parcelas. Mantenha `America/Sao_Paulo` (o mesmo em que você testou).
+O fuso importa por três motivos: o **cron** (horários dos backups), o **próprio sistema**
+(que usa a hora local do servidor para decidir o mês do ranking e o dia de vencimento das
+parcelas) e as **planilhas e logs de auditoria** (as horas exportadas seguem o relógio do
+servidor). Mantenha `America/Sao_Paulo` (o mesmo em que você testou).
 
 ## 2. WireGuard
 
@@ -394,6 +395,7 @@ Faça esta seção **depois** que o sistema estiver no ar e validado. Enquanto i
 - [ ] Foto de perfil aparece depois de enviar (testa o `/uploads`)
 - [ ] Anexar documento numa solicitação e abrir no backoffice (testa limite de upload)
 - [ ] Aprovar uma venda de teste e ver a TV atualizar sozinha (testa o socket pelo Nginx)
+- [ ] Tela de logs mostra o login e a aprovação, e exportar uma planilha baixa o `.xlsx` (e gera o log "Dados exportados")
 - [ ] Desativar um corretor logado derruba o acesso dele na hora
 - [ ] "Esqueci a senha" entrega o código por e-mail *(depois da seção 13)*
 - [ ] `sudo reboot` e confirmar que WireGuard, MySQL, Nginx e PM2 voltam sozinhos
@@ -530,3 +532,16 @@ domínio, não funciona na internet.
 - **Endereço da VPN:** o `Endpoint` do WireGuard (o IP **público** da VPS) também pode ser um
   nome, por exemplo `vpn.vidasaude.com.br`. Se você trocar de VPS, só muda o DNS e os aparelhos
   continuam funcionando sem reconfigurar.
+
+## 19. Migrar os dados do PC para a VPS (opcional)
+
+Se você começou a usar o sistema no PC e quer levar tudo (banco + fotos + documentos) para a
+VPS, siga o roteiro **`MIGRAR-PC-PARA-VPS.md`**. Resumo das regras:
+
+- A `DADOS_SENSIVEIS_CHAVE` da VPS tem que ser **exatamente a do PC**, senão CPF, CNPJ e
+  documentos ficam ilegíveis.
+- Faça um **ensaio** antes do dia da troca.
+- Depois de restaurar o `.sql`, rode **`npm run db:deploy`** (aplica migrações que o PC não tinha)
+  e **não rode o `seed`**.
+- Confira com `node verificar-migracao.js` (contagens, chave e arquivos; não imprime dado pessoal).
+- Troque as senhas das contas do seed antigo e apague as contas de teste.
