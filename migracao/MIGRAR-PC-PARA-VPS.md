@@ -22,8 +22,9 @@ faltando. **Não testado aqui:** a VPS real, o WireGuard e o `scp` a partir do W
 1. **A `DADOS_SENSIVEIS_CHAVE` da VPS tem que ser exatamente a do PC.** CPF, CNPJ,
    pré-existências e os documentos foram cifrados com ela. Chave diferente = dado ilegível.
    - Use no PC uma chave **forte** (48 bytes aleatórios) e guarde no gerenciador de senhas.
-   - Se a chave do PC é fraca ou de teste, **não a leve para produção**: é preciso recifrar tudo
-     (campos e arquivos) com uma chave nova. Me peça o script de recifragem antes de migrar.
+   - Se a chave do PC é fraca ou de teste (por exemplo, o texto de exemplo do `.env.example`),
+     **não a leve para produção**: recifre tudo com uma chave nova e forte **antes** do backup
+     final, com o `recifrar-dados.js` (seção 1b).
 2. **Um sistema de cada vez.** Depois da troca, o PC para de ser usado. Dois bancos em uso
    ao mesmo tempo não têm como ser juntados.
 3. **O código da VPS tem que estar no mesmo commit do PC ou mais novo.** Se o PC tiver uma
@@ -38,6 +39,66 @@ Rode **todo este roteiro com os dados de teste atuais** do PC, numa VPS ainda se
 Confirme que a verificação (seção 4) termina com "Tudo certo". No dia da troca, apague o banco da
 VPS (seção 3, passo 1) e repita com os dados finais. O ensaio descobre o problema (chave,
 versão, permissão) enquanto ainda não tem nada em jogo.
+
+## 1b. Se a chave do PC for fraca: recifrar antes de migrar
+
+O `recifrar-dados.js` decifra tudo com a chave **antiga** e recifra com uma chave **nova e forte**:
+os campos cifrados do banco (CPF, CNPJ, pré-existências) e os documentos de `documentos-privados/`.
+Não altera as fotos (`uploads/`, que não são cifradas) nem as senhas dos usuários.
+**Testado** (MariaDB local, dados cifrados com a chave de exemplo): simulação, recusa sem confirmação,
+aborto com dado corrompido, aplicação, verificação com a chave nova e re-execução.
+
+**Como o script se protege:** a simulação (padrão) não escreve nada; qualquer valor ou documento que
+não abra com a chave antiga **aborta** sem alterar nada; os documentos novos vão para uma pasta
+paralela, o banco é atualizado numa **única transação**, e só no fim as pastas são trocadas (a original
+fica como `documentos-privados.antigo-*`). Não imprime nenhum dado pessoal.
+
+**Passo a passo (no PC, dentro de `server/`, com o servidor PARADO):**
+
+1. **Backup completo antes de tudo** e uma cópia dele fora da pasta do projeto:
+   ```powershell
+   node backup.js
+   ```
+2. **Gere a chave nova** (no seu terminal; guarde-a no gerenciador de senhas e **não a cole no chat**):
+   ```powershell
+   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+   ```
+3. **No `.env` do PC**, acrescente (sem mexer na linha antiga):
+   ```ini
+   DADOS_SENSIVEIS_CHAVE_NOVA="<a chave nova>"
+   ```
+4. **Verificação independente (opcional, recomendada):** antes de recifrar, exporte e guarde o hash dos
+   CSVs em claro. O `exportar-dados.js` grava CPF em texto puro, então **apague a pasta depois**:
+   ```powershell
+   node exportar-dados.js
+   Get-FileHash exportacao-dados\pessoas.csv, exportacao-dados\adesoes.csv | Select-Object Hash, Path
+   Remove-Item -Recurse -Force exportacao-dados
+   ```
+5. **Simulação** (não altera nada). Deve terminar com "Simulacao concluida":
+   ```powershell
+   node recifrar-dados.js
+   ```
+6. **Aplicar:**
+   ```powershell
+   node recifrar-dados.js --aplicar --confirmo-backup
+   ```
+7. **Trocar a chave no `.env`:** copie o valor de `DADOS_SENSIVEIS_CHAVE_NOVA` para
+   `DADOS_SENSIVEIS_CHAVE` e **apague** a linha `DADOS_SENSIVEIS_CHAVE_NOVA`.
+8. **Verificar:**
+   ```powershell
+   node verificar-migracao.js
+   ```
+   Deve terminar com "Tudo certo". Se der `ERRO` na chave, o `.env` ainda está com a chave antiga.
+9. **Conferir pelo `exportar-dados.js` (se fez o passo 4):** gere de novo e compare os hashes. Devem
+   ser **idênticos**: prova que o conteúdo em claro não mudou. Apague a pasta de novo.
+10. **Teste o sistema** (`npm run dev`): abra uma solicitação com CPF e um documento anexado.
+11. **Guarde a chave nova** no gerenciador de senhas e **gere um backup novo** (`node backup.js`):
+    é esse backup que vai para a VPS, e a VPS usa **esta mesma chave nova** no `.env`.
+12. Só depois de tudo conferido, apague a pasta `documentos-privados.antigo-*` (ela está cifrada
+    com a chave **antiga**, que é fraca) e o `.env.example` nunca deve ser usado como chave.
+
+**Se der errado:** o banco só muda dentro de uma transação, e a pasta original é preservada. Para
+voltar atrás, restaure o backup do passo 1 (`.sql` e `.tar.gz`) e mantenha a chave antiga no `.env`.
 
 ## 2. No PC (corte)
 
