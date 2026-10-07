@@ -189,7 +189,7 @@ td .two small{color:var(--muted)}
 
   <section class="kpis" id="kpis" aria-label="Indicadores"></section>
   <main id="view"></main>
-  <p class="note-demo">Prévia com dados de exemplo (energia solar). Nada aqui está ligado a uma conta real do Meta.</p>
+  <p class="note-demo">Prévia com dados de exemplo (venda de plano de saúde). Nada aqui está ligado a uma conta real do Meta.</p>
 </div>
 
 <div id="overlay"></div>
@@ -200,7 +200,7 @@ td .two small{color:var(--muted)}
 const MIN=60000,H=3600000;
 const STATUS=[
   {id:'novo',label:'Novo'},{id:'contato',label:'Em contato'},{id:'qualificado',label:'Qualificado'},
-  {id:'proposta',label:'Proposta enviada'},{id:'ganho',label:'Ganho'},{id:'perdido',label:'Perdido'}
+  {id:'proposta',label:'Cotação enviada'},{id:'ganho',label:'Contrato fechado'},{id:'perdido',label:'Perdido'}
 ];
 const SMAP=Object.fromEntries(STATUS.map(s=>[s.id,s]));
 const REGION={SP:'Sudeste',RJ:'Sudeste',MG:'Sudeste',ES:'Sudeste',PR:'Sul',SC:'Sul',RS:'Sul',BA:'Nordeste',PE:'Nordeste',CE:'Nordeste',RN:'Nordeste',PB:'Nordeste',DF:'Centro-Oeste/Norte',GO:'Centro-Oeste/Norte',MT:'Centro-Oeste/Norte',AM:'Centro-Oeste/Norte',PA:'Centro-Oeste/Norte'};
@@ -210,9 +210,9 @@ const MODES=[
   {id:'region',label:'Por região',desc:'O lead vai para o vendedor da região do cliente. Sem ninguém disponível lá, cai no rodízio.'}
 ];
 const CAMPAIGNS=[
-  {name:'Solar Residencial · Out/26',adset:'Interesse: economia de energia',ad:'Vídeo depoimento 01'},
-  {name:'Solar Empresas · Out/26',adset:'Gestores e donos de negócio',ad:'Carrossel payback'},
-  {name:'Solar Rural · Lookalike',adset:'Lookalike 2% clientes',ad:'Imagem fazenda'}
+  {name:'Plano Familiar · Out/26',adset:'Pais de 28 a 50 anos',ad:'Vídeo cobertura hospitalar',plano:'Familiar'},
+  {name:'Plano PME e MEI · Out/26',adset:'Donos de empresa e MEI',ad:'Carrossel economia no CNPJ',plano:'Empresarial (CNPJ)'},
+  {name:'Plano Individual 50+ · Lookalike',adset:'Lookalike 2% dos clientes',ad:'Imagem consulta médica',plano:'Individual'}
 ];
 const sellers=[
   {id:'s1',name:'Camila Duarte',region:'Sudeste',online:true,cap:12,h:218},
@@ -241,29 +241,29 @@ function mk(name,city,uf,c,plat,age,status,owner,conta,imovel,fc){
     path.forEach((st,i)=>h.push({t:first+i*Math.max(8,age/ (path.length+2))*MIN*0.6,type:'status',st,text:'Status alterado para '+SMAP[st].label}));
   }
   return {id:uid(),name,phone:phone(),email:name.split(' ')[0].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')+'@email.com',city,uf,campaign:camp.name,adset:camp.adset,ad:camp.ad,platform:plat,created,status,owner,first,
-    answers:{'Valor médio da conta de luz':conta,'Tipo de imóvel':imovel,'Já usa energia solar?':'Não'},notes:[],history:h};
+    answers:{'Tipo de plano':camp.plano,'Quantidade de vidas':conta,'Idade do titular':imovel,'Já possui plano?':name.length%2?'Sim, quer trocar':'Não','Consentimento LGPD':'Aceito no formulário'},notes:[],history:h};
 }
 const leads=[
-  mk('Marina Albuquerque','São Paulo','SP',0,'Instagram',3,'novo','s1','R$ 680','Casa própria'),
-  mk('Eduardo Pinheiro','Curitiba','PR',0,'Facebook',6,'novo','s2','R$ 420','Casa própria'),
-  mk('Larissa Cavalcante','Recife','PE',2,'Facebook',22,'novo','s3','R$ 1.150','Sítio / fazenda'),
-  mk('Construtora Vale Verde','Goiânia','GO',1,'Facebook',48,'novo',null,'R$ 9.800','Galpão comercial'),
-  mk('Gustavo Henrique Lima','Campinas','SP',0,'Instagram',95,'contato','s1','R$ 530','Casa própria',7),
-  mk('Patrícia Nogueira','Florianópolis','SC',0,'Instagram',140,'contato','s2','R$ 390','Apartamento',12),
-  mk('Marcos Tavares','Fortaleza','CE',1,'Facebook',210,'contato','s3','R$ 4.200','Loja',5),
-  mk('Aline Siqueira','Belo Horizonte','MG',0,'Instagram',300,'qualificado','s1','R$ 760','Casa própria',4),
-  mk('Fernando Kuhn','Porto Alegre','RS',2,'Facebook',410,'qualificado','s2','R$ 2.100','Sítio / fazenda',9),
-  mk('Agropecuária Boa Safra','Cuiabá','MT',2,'Facebook',520,'qualificado','s4','R$ 6.700','Fazenda',15),
-  mk('Renata Fontes','Salvador','BA',0,'Instagram',640,'proposta','s3','R$ 610','Casa própria',6),
-  mk('Oficina Mecânica Prado','Ribeirão Preto','SP',1,'Facebook',780,'proposta','s1','R$ 3.300','Oficina',10),
-  mk('Cláudio Bittencourt','Joinville','SC',0,'Facebook',1100,'ganho','s2','R$ 880','Casa própria',3),
-  mk('Sofia Marques','Rio de Janeiro','RJ',0,'Instagram',1300,'ganho','s1','R$ 540','Casa própria',8),
-  mk('Hotel Ponta Azul','Natal','RN',1,'Instagram',1500,'ganho','s3','R$ 12.400','Hotel',11),
-  mk('Vitor Almeida','Vitória','ES',0,'Instagram',900,'perdido','s1','R$ 280','Apartamento',20),
-  mk('Débora Salgado','Manaus','AM',0,'Facebook',1000,'perdido','s4','R$ 350','Casa alugada',30)
+  mk('Marina Albuquerque','São Paulo','SP',0,'Instagram',3,'novo','s1','4 vidas','34 anos'),
+  mk('Eduardo Pinheiro','Curitiba','PR',0,'Facebook',6,'novo','s2','3 vidas','41 anos'),
+  mk('Larissa Cavalcante','Recife','PE',2,'Facebook',22,'novo','s3','1 vida','56 anos'),
+  mk('Distribuidora Vale Verde','Goiânia','GO',1,'Facebook',48,'novo',null,'12 vidas','Sócio, 45 anos'),
+  mk('Gustavo Henrique Lima','Campinas','SP',0,'Instagram',95,'contato','s1','2 vidas','38 anos',7),
+  mk('Patrícia Nogueira','Florianópolis','SC',0,'Instagram',140,'contato','s2','4 vidas','36 anos',12),
+  mk('Tavares Contabilidade','Fortaleza','CE',1,'Facebook',210,'contato','s3','6 vidas','Sócio, 49 anos',5),
+  mk('Aline Siqueira','Belo Horizonte','MG',0,'Instagram',300,'qualificado','s1','3 vidas','31 anos',4),
+  mk('Fernando Kuhn','Porto Alegre','RS',2,'Facebook',410,'qualificado','s2','2 vidas','58 anos',9),
+  mk('Agropecuária Boa Safra','Cuiabá','MT',1,'Facebook',520,'qualificado','s4','18 vidas','Sócia, 52 anos',15),
+  mk('Renata Fontes','Salvador','BA',0,'Instagram',640,'proposta','s3','4 vidas','39 anos',6),
+  mk('Oficina Mecânica Prado','Ribeirão Preto','SP',1,'Facebook',780,'proposta','s1','5 vidas','Sócio, 43 anos',10),
+  mk('Cláudio Bittencourt','Joinville','SC',0,'Facebook',1100,'ganho','s2','3 vidas','44 anos',3),
+  mk('Sofia Marques','Rio de Janeiro','RJ',0,'Instagram',1300,'ganho','s1','2 vidas','29 anos',8),
+  mk('Clínica Ponta Azul','Natal','RN',1,'Instagram',1500,'ganho','s3','22 vidas','Sócio, 47 anos',11),
+  mk('Vitor Almeida','Vitória','ES',0,'Instagram',900,'perdido','s1','1 vida','27 anos',20),
+  mk('Débora Salgado','Manaus','AM',0,'Facebook',1000,'perdido','s4','4 vidas','35 anos',30)
 ];
 leads.forEach(l=>l.history.sort((a,b)=>a.t-b.t));
-log.push({t:NOW0-48*MIN,text:'Construtora Vale Verde recebida, sem vendedor disponível na região (Centro-Oeste/Norte)',cls:''});
+log.push({t:NOW0-48*MIN,text:'Distribuidora Vale Verde recebida, sem vendedor disponível na região (Centro-Oeste/Norte)',cls:''});
 log.push({t:NOW0-6*MIN,text:'Eduardo Pinheiro distribuído para Rafael Moreira (região Sul)',cls:''});
 log.push({t:NOW0-3*MIN,text:'Marina Albuquerque distribuída para Camila Duarte (região Sudeste)',cls:''});
 
@@ -296,7 +296,7 @@ function pick(lead){
   }
   return{seller:rr(),why:'rodízio'};
 }
-const POOL=[['Beatriz Camargo','Londrina','PR',0,'Instagram','R$ 470','Casa própria'],['Rogério Neves','Uberlândia','MG',1,'Facebook','R$ 5.600','Galpão'],['Tatiane Barros','João Pessoa','PB',0,'Instagram','R$ 590','Casa própria'],['Clínica Vida Plena','Brasília','DF',1,'Facebook','R$ 3.900','Clínica'],['Ícaro Fernandes','Santos','SP',2,'Facebook','R$ 1.800','Chácara'],['Helena Rocha','Pelotas','RS',0,'Instagram','R$ 410','Casa própria']];
+const POOL=[['Beatriz Camargo','Londrina','PR',0,'Instagram','3 vidas','37 anos'],['Transportadora Neves','Uberlândia','MG',1,'Facebook','9 vidas','Sócio, 51 anos'],['Tatiane Barros','João Pessoa','PB',0,'Instagram','4 vidas','33 anos'],['Studio Vida Plena','Brasília','DF',1,'Facebook','7 vidas','Sócia, 40 anos'],['Ícaro Fernandes','Santos','SP',2,'Facebook','2 vidas','61 anos'],['Helena Rocha','Pelotas','RS',0,'Instagram','3 vidas','35 anos']];
 let pi=0;
 function simulate(){
   const p=POOL[pi++%POOL.length];
@@ -334,7 +334,7 @@ function kpis(){
    <div class="kpi"><small>Leads recebidos</small><b class="mono">${total}</b><span>nas últimas 36 h</span><div class="strip" aria-hidden="true">${strip}</div></div>
    <div class="kpi ${late?'alert':''}"><small>Aguardando 1º contato</small><b class="mono">${novos.length}</b><span>${late?late+' acima de 15 min':'dentro do prazo'}</span></div>
    <div class="kpi"><small>Tempo até o 1º contato</small><b class="mono">${avg}</b><span>min em média</span></div>
-   <div class="kpi"><small>Conversão em venda</small><b class="mono">${total?Math.round(won/total*100):0}%</b><span>${won} ganhos</span></div>`;
+   <div class="kpi"><small>Conversão em contrato</small><b class="mono">${total?Math.round(won/total*100):0}%</b><span>${won} contratos</span></div>`;
 }
 
 /* funil */
@@ -388,7 +388,7 @@ function dist(){
      <div class="modes" role="radiogroup">${MODES.map(m=>`<label class="mode"><input type="radio" name="mode" value="${m.id}"${m.id===mode?' checked':''}><span><b>${m.label}</b><small>${m.desc}</small></span></label>`).join('')}</div>
      <h2>Equipe</h2><p>Quem está desligado não recebe novos leads.</p>
      <div class="team">${sellers.map(s=>{const a=active(s.id),tot=leads.filter(l=>l.owner===s.id).length,won=leads.filter(l=>l.owner===s.id&&l.status==='ganho').length;return `
-       <div class="mem">${av(s.id,true)}<div class="nm"><b>${esc(s.name)}</b><small>${s.region} · ${tot} recebidos · ${won} ganhos</small></div>
+       <div class="mem">${av(s.id,true)}<div class="nm"><b>${esc(s.name)}</b><small>${s.region} · ${tot} recebidos · ${won} contratos</small></div>
        <label class="sw" title="Disponível para receber leads"><input type="checkbox" data-sw="${s.id}"${s.online?' checked':''} aria-label="${esc(s.name)} disponível"><span></span></label>
        <div class="bar"><div><i class="${a>=s.cap?'full':''}" style="width:${Math.min(100,a/s.cap*100)}%"></i></div><span class="mono">${a}/${s.cap} em andamento</span></div></div>`}).join('')}</div>
    </div>
@@ -413,7 +413,7 @@ function drawer(){
    <div class="sec field"><h4>Responsável</h4><select id="own" aria-label="Responsável"><option value="">Sem responsável (fila)</option>${sellers.map(s=>`<option value="${s.id}"${l.owner===s.id?' selected':''}>${esc(s.name)}${s.online?'':' (indisponível)'}</option>`).join('')}</select></div>
    <div class="sec"><h4>Respostas do formulário</h4><dl class="dl">${Object.entries(l.answers).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>
    <div class="sec"><h4>Origem no Meta</h4><dl class="dl"><dt>Plataforma</dt><dd>${l.platform}</dd><dt>Campanha</dt><dd>${esc(l.campaign)}</dd><dt>Conjunto</dt><dd>${esc(l.adset)}</dd><dt>Anúncio</dt><dd>${esc(l.ad)}</dd><dt>Recebido em</dt><dd class="mono">${fdate(l.created)}</dd><dt>1º contato</dt><dd class="mono">${l.first?Math.round((l.first-l.created)/MIN)+' min depois':'ainda não'}</dd></dl></div>
-   <div class="sec field"><h4>Anotações</h4><textarea id="note" placeholder="Ex.: pediu retorno amanhã após as 14h" aria-label="Nova anotação"></textarea><div><button class="btn" id="addnote">Salvar anotação</button></div>
+   <div class="sec field"><h4>Anotações</h4><textarea id="note" placeholder="Ex.: quer comparar com o plano atual, retornar amanhã após as 14h" aria-label="Nova anotação"></textarea><div><button class="btn" id="addnote">Salvar anotação</button></div>
      ${notes.length?`<ul class="timeline" style="margin-top:6px">${notes.map(n=>`<li><time>${fdate(n.t)}</time>${esc(n.text)}</li>`).join('')}</ul>`:''}</div>
    <div class="sec"><h4>Histórico</h4><ul class="timeline">${ph.map(e=>`<li style="--c:${e.st?`var(--s-${e.st})`:e.type==='in'?'var(--accent)':'var(--muted)'}"><time>${fdate(e.t)}</time>${esc(e.text)}</li>`).join('')}</ul></div>
   </aside>`;
