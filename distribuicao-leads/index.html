@@ -171,6 +171,32 @@ td .two small{color:var(--muted)}
 .timeline time{display:block;color:var(--muted);font-family:var(--f-mono);font-size:11px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
 .note-demo{color:var(--muted);font-size:12px;padding-block:8px 24px}
+
+/* Bot Telegram */
+.botgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px);gap:16px;align-items:start}
+@media (max-width:900px){.botgrid{grid-template-columns:minmax(0,1fr)}}
+.seg{display:inline-flex;background:var(--surface-2);padding:3px;border-radius:10px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.try{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+.try b{color:var(--fg)}
+.phone{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column;height:640px;max-height:80vh;min-width:0}
+.tg-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.tg-head small{display:block;color:var(--muted);font-size:12px}
+.tg-msgs{flex:1;overflow-y:auto;padding:14px 12px;background:var(--surface-2);display:flex;flex-direction:column;gap:10px}
+.tg-msg{display:flex;flex-direction:column;gap:4px;max-width:92%;align-self:flex-start}
+.tg-msg:has(.tg-row){width:92%}
+.tg-msg.user{align-self:flex-end;align-items:flex-end}
+.tg-bub{background:var(--surface);border-radius:14px 14px 14px 4px;padding:8px 12px;box-shadow:var(--shadow);overflow-wrap:anywhere;font-size:13.5px}
+.tg-msg.user .tg-bub{background:var(--accent);color:var(--accent-ink);border-radius:14px 14px 4px 14px}
+.tg-t{display:block;color:var(--accent);margin-bottom:2px}
+.tg-bub time{display:block;text-align:right;font-family:var(--f-mono);font-size:10px;opacity:.6;margin-top:2px}
+.tg-st{margin-top:6px;padding-top:6px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.tg-row{display:flex;gap:4px}
+.tg-row>*{flex:1;text-align:center;border:0;border-radius:8px;padding:8px 6px;font-size:13px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surface));text-decoration:none}
+.tg-row>*:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface))}
+.tg-row .on{background:var(--accent);color:var(--accent-ink)}
+.tg-input{border-top:1px solid var(--line);padding:12px 16px;color:var(--muted);background:var(--surface)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -181,6 +207,7 @@ td .two small{color:var(--muted)}
       <button class="tab" role="tab" data-view="funil" aria-selected="true">Funil</button>
       <button class="tab" role="tab" data-view="lista" aria-selected="false">Lista</button>
       <button class="tab" role="tab" data-view="dist" aria-selected="false">Distribuição</button>
+      <button class="tab" role="tab" data-view="bot" aria-selected="false">Bot Telegram</button>
     </div>
     <span class="spacer"></span>
     <span class="live">Meta Lead Ads conectado</span>
@@ -263,6 +290,13 @@ const leads=[
   mk('Débora Salgado','Manaus','AM',0,'Facebook',1000,'perdido','s4','4 vidas','35 anos',30)
 ];
 leads.forEach(l=>l.history.sort((a,b)=>a.t-b.t));
+const chat={};sellers.forEach(s=>chat[s.id]=[]);
+let botSeller='s1',botTab='chat';
+const tm=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+function botSend(sid,l,t){chat[sid].push({t:t||Date.now(),from:'bot',leadId:l.id})}
+function botSay(sid,text,from){chat[sid].push({t:Date.now(),from:from||'bot',text})}
+function addLog(text,cls){log.push({t:Date.now(),text,cls:cls||''})}
+leads.slice().reverse().forEach(l=>{if(l.owner&&['novo','contato','qualificado','proposta'].includes(l.status))botSend(l.owner,l,l.created+20000)});
 log.push({t:NOW0-48*MIN,text:'Distribuidora Vale Verde recebida, sem vendedor disponível na região (Centro-Oeste/Norte)',cls:''});
 log.push({t:NOW0-6*MIN,text:'Eduardo Pinheiro distribuído para Rafael Moreira (região Sul)',cls:''});
 log.push({t:NOW0-3*MIN,text:'Marina Albuquerque distribuída para Camila Duarte (região Sudeste)',cls:''});
@@ -280,9 +314,9 @@ const pill=s=>`<span class="pill" style="--c:var(--s-${s})">${SMAP[s].label}</sp
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.k);toast.k=setTimeout(()=>t.hidden=true,2800)}
 
 /* distribuição */
-function pick(lead){
+function pick(lead,exclude){
   const region=REGION[lead.uf];
-  const ok=sellers.filter(s=>s.online&&active(s.id)<s.cap);
+  const ok=sellers.filter(s=>s.online&&active(s.id)<s.cap&&s.id!==exclude);
   if(!ok.length)return{seller:null,why:'sem vendedor disponível'};
   const rr=()=>{for(let i=1;i<=sellers.length;i++){const k=(rrPtr+i)%sellers.length;if(ok.includes(sellers[k])){rrPtr=k;return sellers[k]}}};
   if(mode==='region'){
@@ -305,6 +339,7 @@ function simulate(){
   if(r.seller){l.owner=r.seller.id;l.history.push({t:Date.now(),type:'assign',text:'Distribuído para '+r.seller.name+' ('+r.why+')'})}
   else l.history.push({t:Date.now(),type:'assign',text:'Sem vendedor disponível, aguardando na fila'});
   leads.unshift(l);
+  if(r.seller){botSend(r.seller.id,l);if(view==='bot'){botSeller=r.seller.id;botTab='chat'}}
   log.unshift({t:Date.now(),cls:'new',text:r.seller?`${l.name} (${l.city}/${l.uf}) distribuído para ${r.seller.name}, ${r.why}`:`${l.name} (${l.city}/${l.uf}) recebido, ${r.why}`});
   toast(r.seller?`Novo lead para ${r.seller.name}`:'Novo lead na fila, sem vendedor disponível');
   render();
@@ -320,6 +355,7 @@ function setOwner(l,id){
   if(l.owner===(id||null))return;
   l.owner=id||null;
   l.history.push({t:Date.now(),type:'assign',text:id?'Reatribuído para '+SM[id].name:'Responsável removido'});
+  if(id){botSend(id,l);addLog(l.name+' reatribuído para '+SM[id].name+' pelo gestor')}
   toast(id?'Lead enviado para '+SM[id].name:'Responsável removido');
 }
 
@@ -394,7 +430,7 @@ function dist(){
    </div>
    <div class="panel"><h2>Entrada em tempo real</h2><p>Cada lead recebido e para quem foi.</p>
      <button class="btn primary" id="sim2" style="margin-bottom:14px">Simular lead do Meta</button>
-     <ul class="log">${log.slice(0,30).map(e=>`<li class="${e.cls}"><time>${fdate(e.t)}</time>${esc(e.text)}</li>`).join('')}</ul></div>
+     <ul class="log">${log.slice().sort((a,b)=>b.t-a.t).slice(0,30).map(e=>`<li class="${e.cls}"><time>${fdate(e.t)}</time>${esc(e.text)}</li>`).join('')}</ul></div>
   </div>`;
 }
 
@@ -421,18 +457,90 @@ function drawer(){
 }
 function closeDrawer(){openId=null;$('#overlay').innerHTML='';}
 
+
+/* bot do Telegram (simulado) */
+function leadMsg(m,sid){
+  const l=leads.find(x=>x.id===m.leadId);if(!l)return'';
+  const mine=l.owner===sid,a=l.answers,closed=l.status==='ganho'||l.status==='perdido';
+  const wa='https://wa.me/55'+l.phone.replace(/\D/g,'');
+  const b=(act,label,extra,on)=>`<button class="${on?'on':''}" data-bot="${act}" data-sid="${sid}" data-lid="${l.id}"${extra||''}>${label}</button>`;
+  let btns='',st;
+  if(!mine){st='Repassado'+(l.owner?' para '+esc(SM[l.owner].name):'. Voltou para a fila')}
+  else if(closed){st='Encerrado: '+SMAP[l.status].label}
+  else{
+    st='Status: '+SMAP[l.status].label;
+    if(l.status==='novo')btns=`<div class="tg-row">${b('take','Assumir lead')}${b('pass','Passar para outro')}</div>`;
+    else btns=['qualificado,proposta','ganho,perdido'].map(r=>`<div class="tg-row">${r.split(',').map(x=>b('st',(l.status===x?'✓ ':'')+SMAP[x].label,` data-st="${x}"`,l.status===x)).join('')}</div>`).join('');
+    btns+=`<div class="tg-row"><a href="${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a></div>`;
+  }
+  return `<div class="tg-msg bot"><div class="tg-bub"><b class="tg-t">Novo lead · ${esc(l.campaign)}</b>
+    <div><strong>${esc(l.name)}</strong></div><div>${esc(l.city)}/${l.uf}</div>
+    <div>${esc(a['Quantidade de vidas'])}, ${esc(a['Idade do titular'])}</div>
+    <div>Já possui plano: ${esc(a['Já possui plano?'])}</div>
+    <div class="mono">${l.phone}</div>
+    <div class="tg-st">${st}${l.status==='novo'&&mine&&sla(l)?' · <span class="sla">prazo estourado</span>':''}</div>
+    <time>${tm(m.t)}</time></div>${btns}</div>`;
+}
+function botView(){
+  const s=SM[botSeller];
+  const msgs=botTab==='chat'
+    ? chat[botSeller].slice().sort((a,b)=>a.t-b.t).map(m=>m.leadId?leadMsg(m,botSeller):`<div class="tg-msg ${m.from}"><div class="tg-bub">${esc(m.text)}<time>${tm(m.t)}</time></div></div>`).join('')
+    : log.slice().sort((a,b)=>a.t-b.t).map(e=>`<div class="tg-msg bot"><div class="tg-bub"><b class="tg-t">LeadBot</b>${esc(e.text)}<time>${tm(e.t)}</time></div></div>`).join('');
+  const waiting=chat[botSeller].length===0?'<div class="empty">Nenhum lead recebido ainda. Toque em "Simular lead do Meta".</div>':'';
+  return `<div class="botgrid">
+   <div class="panel"><h2>Bot no Telegram</h2><p>O sistema escolhe o corretor e o bot entrega o lead na conversa dele. Os botões da mensagem atualizam o funil na hora.</p>
+     <div class="seg" role="group" aria-label="Tela">
+       <button data-btab="chat" aria-pressed="${botTab==='chat'}">Conversa do corretor</button>
+       <button data-btab="group" aria-pressed="${botTab==='group'}">Grupo do gestor</button></div>
+     ${botTab==='chat'?`<div class="field" style="margin:14px 0"><label for="bsel" style="color:var(--muted)">Ver o celular de</label><select id="bsel">${sellers.map(x=>`<option value="${x.id}"${x.id===botSeller?' selected':''}>${esc(x.name)} · ${x.region}${x.online?'':' (indisponível)'}</option>`).join('')}</select></div>`:'<p style="margin-top:14px">O grupo recebe um aviso de cada lead distribuído e de cada mudança de status feita pelos corretores.</p>'}
+     <button class="btn primary" id="sim2">Simular lead do Meta</button>
+     <h2 style="margin-top:20px">Experimente</h2>
+     <ol class="try"><li>Simule um lead. Ele chega no celular do corretor escolhido pela regra ativa.</li><li>Toque em <b>Assumir lead</b>. O status vira "Em contato" e o tempo de resposta é registrado.</li><li>Avance o lead com os botões de status e veja o funil e os indicadores mudarem.</li><li>Toque em <b>Passar para outro</b> para ver o lead ir para outro corretor.</li></ol>
+     <p style="margin:12px 0 0;font-size:12px">As mensagens são simuladas. Nenhum Telegram real é acionado.</p></div>
+   <div class="phone"><div class="tg-head"><span class="av lg" style="--h:210">LB</span><div><b>${botTab==='chat'?'LeadBot':'Gestão de leads'}</b><small>${botTab==='chat'?'bot · conversa de '+esc(s.name):'grupo · gestor, corretores e bot'}</small></div></div>
+     <div class="tg-msgs" tabindex="0" aria-label="Mensagens">${msgs||waiting}</div>
+     <div class="tg-input" aria-hidden="true">Mensagem</div></div>
+  </div>`;
+}
+function botAct(d){
+  const l=leads.find(x=>x.id===d.lid),s=SM[d.sid];
+  if(!l||!s||l.owner!==s.id)return;
+  if(d.bot==='take'){
+    const min=Math.max(1,Math.round((Date.now()-l.created)/MIN));
+    botSay(s.id,'Assumir lead','user');setStatus(l,'contato');
+    botSay(s.id,'Lead assumido. Tempo até o 1º contato: '+min+' min. Use os botões da mensagem do lead para registrar o andamento.');
+    addLog(s.name+' assumiu '+l.name+' ('+min+' min após a chegada)');
+  }else if(d.bot==='pass'){
+    botSay(s.id,'Passar para outro','user');
+    const r=pick(l,s.id);
+    l.owner=r.seller?r.seller.id:null;
+    l.history.push({t:Date.now(),type:'assign',text:s.name+' passou o lead. '+(r.seller?'Redistribuído para '+r.seller.name+' ('+r.why+')':'Sem vendedor disponível, voltou para a fila')});
+    if(r.seller)botSend(r.seller.id,l);
+    botSay(s.id,r.seller?'Lead repassado para '+r.seller.name+'.':'Nenhum outro corretor disponível. O lead voltou para a fila.');
+    addLog(s.name+' passou '+l.name+(r.seller?' para '+r.seller.name:'. Lead voltou para a fila'));
+  }else if(d.bot==='st'){
+    const st=d.st;botSay(s.id,SMAP[st].label,'user');setStatus(l,st);
+    botSay(s.id,st==='ganho'?'Contrato registrado. Lead encerrado.':st==='perdido'?'Lead encerrado como perdido.':'Status atualizado para '+SMAP[st].label+'.');
+    addLog(s.name+' marcou '+l.name+' como '+SMAP[st].label);
+  }
+  render();
+}
+
 /* render */
 function render(){
   kpis();
-  $('#view').innerHTML=view==='funil'?board():view==='lista'?list():dist();
+  $('#view').innerHTML=view==='funil'?board():view==='lista'?list():view==='bot'?botView():dist();
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.view===view));
   if(openId)drawer();
+  const m=$('.tg-msgs');if(m)m.scrollTop=m.scrollHeight;
 }
 function note(l){const ta=$('#note');const v=ta.value.trim();if(!v)return;l.notes.push({t:Date.now(),text:v});l.history.push({t:Date.now(),type:'note',text:'Anotação adicionada'});toast('Anotação salva');render()}
 
 document.addEventListener('click',e=>{
   const t=e.target;
   const tab=t.closest('.tab');if(tab){view=tab.dataset.view;render();return}
+  const bb=t.closest('[data-bot]');if(bb){botAct(bb.dataset);return}
+  const bt=t.closest('[data-btab]');if(bt){botTab=bt.dataset.btab;render();return}
   if(t.closest('#sim')||t.closest('#sim2')){simulate();return}
   if(t.closest('#close')||t.id==='scrim'){closeDrawer();return}
   const l=leads.find(x=>x.id===openId);
@@ -446,6 +554,7 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
+  if(t.id==='bsel'){botSeller=t.value;render();return}
   if(t.name==='mode'){mode=t.value;render();toast('Regra ativa: '+MODES.find(m=>m.id===mode).label);return}
   if(t.dataset.sw){SM[t.dataset.sw].online=t.checked;toast(SM[t.dataset.sw].name+(t.checked?' disponível':' indisponível'));render();return}
   if(t.id==='own'){setOwner(leads.find(x=>x.id===openId),t.value);render();return}
