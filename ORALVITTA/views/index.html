@@ -8,11 +8,11 @@
   <link rel="icon" href="{{FAVICON}}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="{{FONTS_LINK}}" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/theme.css">
 </head>
-<body>
+<body class="{{BODY_CLASS}}">
   <header class="site-header">
     <div class="wrap">
       <a class="{{BRAND_CLASS}}" href="/" aria-label="{{FULL}} — início">{{BRAND}}</a>
@@ -31,9 +31,9 @@
     <section class="hero">
       <div class="wrap">
         <div>
-          <span class="eyebrow">Odontologia em {{CITY}}</span>
-          <h1>Agende sua consulta com facilidade.</h1>
-          <p class="lead">Escolha o serviço, veja os horários realmente disponíveis e reserve o seu na hora, em poucos passos.</p>
+          <span class="eyebrow">{{HERO_EYEBROW}}</span>
+          <h1>{{HERO_TITLE}}</h1>
+          <p class="lead">{{HERO_LEAD}}</p>
           <div class="actions">
             <a class="btn btn-primary" href="/agendar">Agendar consulta</a>
             <a class="btn btn-ghost" href="/consulta">Acompanhar minha consulta</a>
@@ -49,11 +49,32 @@
     <section class="block" id="servicos">
       <div class="wrap">
         <div class="section-head">
-          <span class="eyebrow">Serviços</span>
-          <h2>Cuidado completo para toda a família</h2>
-          <p class="muted">Do atendimento de urgência à odontopediatria: escolha o serviço e já veja os horários livres.</p>
+          <span class="eyebrow">{{SERVICES_EYEBROW}}</span>
+          <h2>{{SERVICES_TITLE}}</h2>
+          <p class="muted">{{SERVICES_LEAD}}</p>
         </div>
         <div class="services" id="services"></div>
+      </div>
+    </section>
+
+    <section class="block alt" id="sobre" hidden>
+      <div class="wrap about">
+        <div>
+          <span class="eyebrow">Sobre nós</span>
+          <h2 id="about-title"></h2>
+          <div id="about-text"></div>
+        </div>
+        <img id="about-img" alt="" hidden>
+      </div>
+    </section>
+
+    <section class="block" id="galeria" hidden>
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Galeria</span>
+          <h2>Conheça o espaço e o nosso trabalho</h2>
+        </div>
+        <div class="gallery" id="gallery"></div>
       </div>
     </section>
 

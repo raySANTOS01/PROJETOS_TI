@@ -18,6 +18,8 @@ Para definir a senha inicial você mesmo: `ADMIN_PASSWORD="sua-senha-longa" npm 
 
 Variáveis opcionais: `BRAND` (qual clínica, veja abaixo), `PORT`, `DB_FILE` (caminho do banco, padrão `data/<marca>.db`), `TRUST_PROXY=true` (atrás de proxy/HTTPS, para cookie `Secure` e IP correto).
 
+> **Modelo para criar qualquer site** (clínica, academia, restaurante…): veja `docs/MODELO.md` e `brands/_modelo/LEIA-ME.md`. Novo projeto: `npm run novo -- <id> "Nome" "Cidade"`.
+
 ## Várias clínicas (marcas)
 
 O mesmo código atende clínicas diferentes. Cada clínica é uma pasta em `brands/<id>/` com:

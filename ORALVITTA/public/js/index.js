@@ -32,6 +32,19 @@
       s.description && h('p', {}, s.description)));
   }
 
+  if (info.about) {
+    document.getElementById('about-title').textContent = info.about.title || '';
+    const box = document.getElementById('about-text');
+    for (const t of info.about.text || []) box.append(h('p', {}, t));
+    if (info.about.image) { const im = document.getElementById('about-img'); im.src = '/img/' + info.about.image; im.hidden = false; }
+    document.getElementById('sobre').hidden = false;
+  }
+  if (info.gallery.length) {
+    const g = document.getElementById('gallery');
+    for (const f of info.gallery) g.append(h('img', { src: '/img/' + f, alt: '', loading: 'lazy' }));
+    document.getElementById('galeria').hidden = false;
+  }
+
   const insSection = document.getElementById('convenios');
   if (info.show_insurances) {
     const ins = document.getElementById('insurances');

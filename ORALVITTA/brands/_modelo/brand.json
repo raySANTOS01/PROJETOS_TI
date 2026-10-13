@@ -1,0 +1,39 @@
+{
+  "id": "meu-projeto",
+  "name": "Nome do Negócio",
+  "subtitle": "Cidade",
+  "fullName": "Nome do Negócio Cidade",
+  "city": "Cidade",
+  "vertical": "clinica",
+  "logo": { "style": "mark", "file": "logo-mark.png", "favicon": "favicon.png" },
+  "design": {
+    "fonts": { "display": ["Cormorant Garamond", "500;600;700"], "body": ["Inter", "300;400;500;600"] },
+    "tone": "light",
+    "hero": "split",
+    "radius": 10,
+    "buttons": "pill"
+  },
+  "colors": {
+    "teal-300": "#9ecddd", "teal-400": "#58b3d0", "teal-500": "#309cb9", "teal-600": "#23829d", "teal-700": "#166a85",
+    "navy-800": "#0f4c66", "navy-900": "#0a3a50",
+    "ink": "#12374a", "ink-soft": "#4b6b7b",
+    "mist-50": "#f5f9fc", "mist-100": "#e8f3f9", "mist-200": "#d3e7f1", "line": "#cde0ea"
+  },
+  "copy": {
+    "eyebrow": "Odontologia em {city}",
+    "heroTitle": "Título principal do site.",
+    "heroLead": "Uma frase curta explicando o que o cliente consegue fazer aqui.",
+    "servicesEyebrow": "Serviços",
+    "servicesTitle": "Título da seção de serviços",
+    "servicesLead": "Frase de apoio da seção de serviços."
+  },
+  "about": { "title": "Sobre nós", "text": ["Parágrafo 1.", "Parágrafo 2."], "image": "sobre.jpg" },
+  "gallery": [],
+  "clinic": { "phone": "(00) 00000-0000", "whatsapp": "5500000000000", "instagram": "", "address": "" },
+  "showInsurances": false,
+  "insurances": ["Particular", "Outro convênio"],
+  "hours": { "weekdays": ["08:00", "18:00"], "saturday": null, "sunday": null },
+  "services": [
+    ["Serviço 1", "Descrição curta.", 30]
+  ]
+}

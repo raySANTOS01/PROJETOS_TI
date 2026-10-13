@@ -25,6 +25,8 @@ module.exports = function publicRoutes(db, brand) {
         whatsapp: st.clinic_whatsapp, instagram: st.clinic_instagram, address: st.clinic_address || '',
       },
       show_insurances: !!brand.showInsurances,
+      about: brand.about || null,
+      gallery: brand.gallery,
       services: db.prepare('SELECT id, name, description, duration_min FROM services WHERE active = 1 ORDER BY sort, id').all(),
       hours: db.prepare('SELECT weekday, open, start_min, end_min, break_start_min, break_end_min FROM hours ORDER BY weekday')
         .all().map(h => ({

@@ -13,7 +13,7 @@ if (!id || !fs.existsSync(path.join(root, 'brands', id, 'brand.json'))) {
 const out = path.resolve(process.argv[3] || path.join(root, '..', `export-${id}`));
 if (fs.existsSync(out)) { console.error(`A pasta ${out} já existe. Apague-a ou escolha outra.`); process.exit(1); }
 
-const skip = new Set(['node_modules', 'data', '.git', 'scripts']);
+const skip = new Set(['node_modules', 'data', '.git', 'scripts', 'docs']);
 function copy(from, to) {
   fs.mkdirSync(to, { recursive: true });
   for (const e of fs.readdirSync(from, { withFileTypes: true })) {

@@ -82,7 +82,7 @@ dialog::backdrop { background: rgba(8, 58, 80, .5); }
 .modal-body h2 { font-size: 1.7rem; margin-bottom: 14px; }
 .modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .modal-close { float: right; }
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--navy-900); color: #fff; padding: 12px 22px; border-radius: 999px; font-size: .9rem; z-index: 60; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--band); color: var(--on-band); padding: 12px 22px; border-radius: 999px; font-size: .9rem; z-index: 60; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
 .toast[hidden] { display: none; }
 .pick-slots { margin: 10px 0 4px; }
 
