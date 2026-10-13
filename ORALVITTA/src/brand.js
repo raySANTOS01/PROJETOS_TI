@@ -5,7 +5,13 @@ const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..', 'brands');
 
-function loadBrand(id = process.env.BRAND || 'oralvitta') {
+// Sem BRAND definido: usa a única clínica presente (cópia exportada) ou 'oralvitta'.
+function defaultId() {
+  const ids = fs.readdirSync(ROOT, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
+  return ids.length === 1 ? ids[0] : 'oralvitta';
+}
+
+function loadBrand(id = process.env.BRAND || defaultId()) {
   if (!/^[a-z0-9-]+$/.test(id)) throw new Error(`Marca inválida: ${id}`);
   const dir = path.join(ROOT, id);
   const file = path.join(dir, 'brand.json');

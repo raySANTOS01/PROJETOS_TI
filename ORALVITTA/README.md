@@ -32,6 +32,12 @@ BRAND=dra-dentista npm start    # Dra. Dentista, com banco de dados próprio (da
 
 Cada marca tem **banco e senha de admin separados** — rode uma instância por clínica (portas/domínios diferentes). Os dados de `brand.json` só valem na criação do banco; depois, tudo é editado no painel. Para uma clínica nova, copie uma pasta de `brands/`.
 
+**Entrega separada:** as clínicas são independentes. Para entregar o sistema a uma delas **sem os dados das outras**, gere um pacote só dela:
+
+```bash
+npm run export -- dra-dentista ../entrega-dra-dentista
+```
+
 > A marca **dra-dentista** foi montada com o que aparece no Instagram dela: o WhatsApp, o endereço, os serviços citados nos posts e as cores azuis. A **logo** é um recorte de baixa resolução de um print (troque `brands/dra-dentista/img/logo-wide.png` pelo original). **Horário de atendimento, durações e convênios são suposições** — ajuste no painel.
 
 ## Páginas
