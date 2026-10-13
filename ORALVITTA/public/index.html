@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OralVitta Fortaleza — Agende sua consulta</title>
+  <meta name="description" content="Clínica odontológica em Fortaleza. Veja os serviços, horários de atendimento e agende sua consulta online.">
+  <link rel="icon" href="/img/logo-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="OralVitta Fortaleza — início">
+        <img src="/img/logo-mark.svg" alt="">
+        <span class="word">OralVitta<small>Fortaleza</small></span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a href="#servicos">Serviços</a>
+        <a href="#atendimento">Atendimento</a>
+        <a href="#convenios">Convênios</a>
+        <a href="/consulta">Minha consulta</a>
+        <a class="btn btn-primary btn-sm" href="/agendar">Agendar consulta</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <span class="eyebrow">Odontologia em Fortaleza</span>
+          <h1>Agende sua consulta com facilidade.</h1>
+          <p class="lead">Escolha o serviço, veja os horários realmente disponíveis e reserve o seu na hora, em poucos passos.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="/agendar">Agendar consulta</a>
+            <a class="btn btn-ghost" href="/consulta">Acompanhar minha consulta</a>
+          </div>
+        </div>
+        <aside class="hours-card" id="atendimento" aria-labelledby="h-hours">
+          <h3 id="h-hours">Horário de atendimento</h3>
+          <table><tbody id="hours-body"></tbody></table>
+        </aside>
+      </div>
+    </section>
+
+    <section class="block" id="servicos">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Serviços</span>
+          <h2>Cuidado completo para toda a família</h2>
+          <p class="muted">Do atendimento de urgência à odontopediatria: escolha o serviço e já veja os horários livres.</p>
+        </div>
+        <div class="services" id="services"></div>
+      </div>
+    </section>
+
+    <section class="block alt">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Como funciona</span>
+          <h2>Três passos, sem complicação</h2>
+        </div>
+        <ol class="how">
+          <li><h3>Escolha o serviço</h3><p class="muted">Selecione o tratamento que você procura.</p></li>
+          <li><h3>Selecione data e horário</h3><p class="muted">Horários ocupados ou indisponíveis aparecem marcados — você só vê o que está livre.</p></li>
+          <li><h3>Receba seu código</h3><p class="muted">Use o código para acompanhar ou cancelar sua consulta quando quiser.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="block" id="convenios">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Convênios e particulares</span>
+          <h2>Atendimento particular e pelos convênios abaixo</h2>
+        </div>
+        <div class="chips" id="insurances"></div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="wrap">
+        <div>
+          <h2>Pronto para marcar?</h2>
+          <p>Prefere falar com a gente? <span id="phone-line">WhatsApp (85) 98885-2046</span></p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary" href="/agendar">Agendar online</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© OralVitta Fortaleza</span>
+      <span><a href="/admin">Área da clínica</a></span>
+    </div>
+  </footer>
+  <script src="/js/common.js"></script>
+  <script src="/js/index.js"></script>
+</body>
+</html>

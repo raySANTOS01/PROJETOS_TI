@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agendar consulta — OralVitta Fortaleza</title>
+  <link rel="icon" href="/img/logo-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="OralVitta Fortaleza — início">
+        <img src="/img/logo-mark.svg" alt="">
+        <span class="word">OralVitta<small>Fortaleza</small></span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a href="/">Início</a>
+        <a href="/consulta">Minha consulta</a>
+        <a class="btn btn-primary btn-sm" href="/agendar">Agendar consulta</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="page-title">
+      <span class="eyebrow">Agendamento online</span>
+      <h1>Agende sua consulta</h1>
+    </div>
+    <ol class="steps" id="steps" aria-label="Etapas">
+      <li><b>1</b>Serviço</li>
+      <li><b>2</b>Data e horário</li>
+      <li><b>3</b>Seus dados</li>
+      <li><b>4</b>Confirmação</li>
+    </ol>
+
+    <div class="flow">
+      <section class="panel" id="stage" aria-live="polite"></section>
+      <aside class="panel summary" id="summary" aria-label="Resumo do agendamento"></aside>
+    </div>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/agendar.js"></script>
+</body>
+</html>

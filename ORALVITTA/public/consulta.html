@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minha consulta — OralVitta Fortaleza</title>
+  <link rel="icon" href="/img/logo-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="OralVitta Fortaleza — início">
+        <img src="/img/logo-mark.svg" alt="">
+        <span class="word">OralVitta<small>Fortaleza</small></span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a href="/">Início</a>
+        <a href="/consulta">Minha consulta</a>
+        <a class="btn btn-primary btn-sm" href="/agendar">Agendar consulta</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="page-title">
+      <span class="eyebrow">Acompanhamento</span>
+      <h1>Minha consulta</h1>
+      <p class="muted">Informe o código recebido no agendamento e o telefone usado na reserva.</p>
+    </div>
+    <div class="lookup">
+      <form class="panel" id="lookup-form" novalidate>
+        <div class="alert error" id="lookup-error" hidden></div>
+        <label class="field"><span>Código da consulta</span>
+          <input type="text" id="code" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="Ex.: K7M2QX" required></label>
+        <label class="field"><span>Telefone</span>
+          <input type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="(85) 90000-0000" required></label>
+        <button class="btn btn-primary" type="submit" id="lookup-btn">Consultar</button>
+      </form>
+      <div class="panel" id="result" hidden></div>
+    </div>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/consulta.js"></script>
+</body>
+</html>

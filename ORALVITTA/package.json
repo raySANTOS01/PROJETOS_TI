@@ -1,0 +1,16 @@
+{
+  "name": "oralvitta-agendamento",
+  "version": "1.0.0",
+  "description": "Sistema de agendamento odontológico - OralVitta Fortaleza",
+  "main": "server.js",
+  "private": true,
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}
