@@ -16,13 +16,29 @@ npm test           # testes automatizados da agenda e da API
 Na **primeira execução** o terminal mostra o usuário (`admin`) e uma senha gerada. Anote e troque em *Painel → Configurações → Segurança*.
 Para definir a senha inicial você mesmo: `ADMIN_PASSWORD="sua-senha-longa" npm start`.
 
-Variáveis opcionais: `PORT`, `DB_FILE` (caminho do banco, padrão `data/oralvitta.db`), `TRUST_PROXY=true` (atrás de proxy/HTTPS, para cookie `Secure` e IP correto).
+Variáveis opcionais: `BRAND` (qual clínica, veja abaixo), `PORT`, `DB_FILE` (caminho do banco, padrão `data/<marca>.db`), `TRUST_PROXY=true` (atrás de proxy/HTTPS, para cookie `Secure` e IP correto).
+
+## Várias clínicas (marcas)
+
+O mesmo código atende clínicas diferentes. Cada clínica é uma pasta em `brands/<id>/` com:
+
+- `brand.json`: nome, cores, telefone/WhatsApp/Instagram/endereço, convênios, horário padrão e serviços iniciais;
+- `img/`: logo (`logo-mark.png` ou `logo-wide.png`) e `favicon.png`.
+
+```bash
+npm start                       # OralVitta (padrão)
+BRAND=dra-dentista npm start    # Dra. Dentista, com banco de dados próprio (data/dra-dentista.db)
+```
+
+Cada marca tem **banco e senha de admin separados** — rode uma instância por clínica (portas/domínios diferentes). Os dados de `brand.json` só valem na criação do banco; depois, tudo é editado no painel. Para uma clínica nova, copie uma pasta de `brands/`.
+
+> A marca **dra-dentista** foi montada com o que aparece no Instagram dela: o WhatsApp, o endereço, os serviços citados nos posts e as cores azuis. A **logo** é um recorte de baixa resolução de um print (troque `brands/dra-dentista/img/logo-wide.png` pelo original). **Horário de atendimento, durações e convênios são suposições** — ajuste no painel.
 
 ## Páginas
 
 | Rota | O que é |
 |---|---|
-| `/` | Apresentação, serviços, horário de atendimento, convênios |
+| `/` | Apresentação, serviços, horário de atendimento, convênios (se a clínica usar) e endereço com link do mapa |
 | `/agendar` | Agendamento: serviço → data/horário → dados → código de confirmação |
 | `/consulta` | Paciente acompanha/cancela com **código + telefone** |
 | `/admin` | Painel da clínica (login) |
@@ -48,7 +64,8 @@ Variáveis opcionais: `PORT`, `DB_FILE` (caminho do banco, padrão `data/oralvit
 
 - As **durações dos serviços** (30/60/90 min) e as **descrições curtas** são sugestões iniciais — ajuste em *Painel → Serviços*.
 - Horário inicial segue as artes: seg–sex 8h30–17h30, sáb 8h30–12h, domingo fechado. Altere em *Disponibilidade*.
-- O logotipo em `public/img/logo.png` é o logotipo completo e `logo-mark.png` / `favicon.png` são recortes dele (cabeçalho e ícone da aba); para trocar, substitua esses arquivos mantendo os nomes.
+- As imagens da OralVitta ficam em `brands/oralvitta/img/` (`logo.png` é a logo completa; `logo-mark.png` e `favicon.png` são recortes). Para trocar, substitua mantendo os nomes.
+- O **endereço** da OralVitta ainda não foi informado: preencha em *Painel → Configurações* e a seção "Onde estamos" aparece no site.
 - Não há envio automático de WhatsApp/SMS/e-mail: os botões abrem o WhatsApp com a mensagem pronta. Integração automática (API do WhatsApp Business) é uma evolução possível.
 
 ## Segurança
@@ -63,6 +80,9 @@ src/schedule.js      regras de agenda (livre/ocupado/bloqueado)
 src/appointments.js  criação de consultas (transação + conflito)
 src/routes-*.js      API pública e do painel
 src/db.js            esquema SQLite e dados iniciais
-public/              HTML/CSS/JS do site e do painel
+src/brand.js         carrega a marca escolhida
+views/               páginas HTML (com marcadores da marca)
+public/              CSS e JS do site e do painel
+brands/              uma pasta por clínica (dados, cores, logo)
 test/                testes (node --test)
 ```

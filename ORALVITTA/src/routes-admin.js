@@ -8,7 +8,7 @@ const { HttpError, str, wrap } = require('./util');
 
 const STATUSES = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'];
 
-module.exports = function adminRoutes(db) {
+module.exports = function adminRoutes(db, brand) {
   const r = express.Router();
   const loginLimit = auth.rateLimiter({ windowMs: 900_000, max: 10 });
 
@@ -75,7 +75,7 @@ module.exports = function adminRoutes(db) {
   }));
 
   r.post('/appointments', wrap((req, res) => {
-    res.status(201).json(A.createAppointment(db, req.body, clock.now(), { admin: true }));
+    res.status(201).json(A.createAppointment(db, req.body, clock.now(), { admin: true, insurances: brand.insurances }));
   }));
 
   r.patch('/appointments/:id', wrap((req, res) => {
@@ -197,6 +197,7 @@ module.exports = function adminRoutes(db) {
     clinic_name: v => str(v, 80, { required: true, label: 'Nome da clínica' }),
     clinic_phone: v => str(v, 30, { required: true, label: 'Telefone' }),
     clinic_whatsapp: v => { const d = String(v).replace(/\D/g, ''); if (d.length < 10 || d.length > 13) throw new HttpError(400, 'WhatsApp inválido.'); return d.length <= 11 ? '55' + d : d; },
+    clinic_address: v => str(v, 160, { label: 'Endereço' }),
     clinic_instagram: v => str(v, 40, { label: 'Instagram' }).replace(/^@/, ''),
     slot_step_min: v => intRange(v, 10, 120, 'Intervalo entre horários'),
     min_advance_min: v => intRange(v, 0, 10080, 'Antecedência mínima'),

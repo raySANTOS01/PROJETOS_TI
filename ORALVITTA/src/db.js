@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 
-function open(file) {
+function open(file, brand) {
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
@@ -67,53 +67,40 @@ function open(file) {
       expires_at INTEGER NOT NULL
     );
   `);
-  seed(db);
+  seed(db, brand);
   return db;
 }
 
-const DEFAULT_SETTINGS = {
-  clinic_name: 'OralVitta Fortaleza',
-  clinic_phone: '(85) 98885-2046',
-  clinic_whatsapp: '5585988852046',
-  clinic_instagram: 'oralvittafortaleza',
-  slot_step_min: '30',        // intervalo entre horários oferecidos
-  min_advance_min: '120',     // antecedência mínima para agendar pelo site
-  max_days_ahead: '60',       // até quantos dias à frente o site aceita agendamentos
-};
-
-const DEFAULT_SERVICES = [
-  ['Prótese', 'Reposição de dentes ausentes com peças fixas ou removíveis.', 60],
-  ['Extração', 'Remoção de dente com avaliação e acompanhamento.', 30],
-  ['Implante', 'Colocação de implante dentário.', 90],
-  ['Restauração', 'Recuperação de dentes com cárie ou fraturas.', 60],
-  ['Clareamento', 'Clareamento dental para um sorriso mais claro.', 60],
-  ['Odontopediatria', 'Cuidados odontológicos para os pequenos.', 30],
-  ['Tratamento de canal', 'Tratamento endodôntico para preservar o dente.', 90],
-  ['Aparelho ortodôntico', 'Instalação e manutenção de aparelhos.', 30],
-  ['Tratamento periodontal', 'Cuidado das gengivas e dos tecidos de suporte.', 60],
-  ['Atendimento de urgência', 'Dor ou intercorrência: atendimento prioritário.', 30],
-  ['Toxina botulínica e preenchimento orofacial', 'Harmonização orofacial.', 60],
-];
-
-function seed(db) {
+function seed(db, brand) {
+  const c = brand.clinic;
+  const defaults = {
+    clinic_name: brand.fullName,
+    clinic_phone: c.phone,
+    clinic_whatsapp: c.whatsapp,
+    clinic_instagram: c.instagram,
+    clinic_address: c.address || '',
+    slot_step_min: '30',        // intervalo entre horários oferecidos
+    min_advance_min: '120',     // antecedência mínima para agendar pelo site
+    max_days_ahead: '60',       // até quantos dias à frente o site aceita agendamentos
+  };
   const insSetting = db.prepare('INSERT OR IGNORE INTO settings(key,value) VALUES (?,?)');
-  for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) insSetting.run(k, v);
+  for (const [k, v] of Object.entries(defaults)) insSetting.run(k, v);
 
   const nHours = db.prepare('SELECT COUNT(*) n FROM hours').get().n;
   if (nHours === 0) {
-    // Segunda a sexta 8h30–17h30, sábado 8h30–12h, domingo fechado.
+    const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
     const ins = db.prepare('INSERT INTO hours(weekday, open, start_min, end_min) VALUES (?,?,?,?)');
     for (let d = 0; d <= 6; d++) {
-      if (d === 0) ins.run(d, 0, 510, 1050);
-      else if (d === 6) ins.run(d, 1, 510, 720);
-      else ins.run(d, 1, 510, 1050);
+      const range = d === 0 ? brand.hours.sunday : d === 6 ? brand.hours.saturday : brand.hours.weekdays;
+      if (range) ins.run(d, 1, toMin(range[0]), toMin(range[1]));
+      else ins.run(d, 0, 510, 1050);
     }
   }
 
   const nServices = db.prepare('SELECT COUNT(*) n FROM services').get().n;
   if (nServices === 0) {
     const ins = db.prepare('INSERT INTO services(name, description, duration_min, sort) VALUES (?,?,?,?)');
-    DEFAULT_SERVICES.forEach(([n, d, m], i) => ins.run(n, d, m, i));
+    brand.services.forEach(([n, d, m], i) => ins.run(n, d, m, i));
   }
 }
 

@@ -32,8 +32,21 @@
       s.description && h('p', {}, s.description)));
   }
 
-  const ins = document.getElementById('insurances');
-  for (const n of info.insurances.filter(x => x !== 'Outro convênio')) ins.append(h('span', { class: 'chip' }, n));
+  const insSection = document.getElementById('convenios');
+  if (info.show_insurances) {
+    const ins = document.getElementById('insurances');
+    for (const n of info.insurances.filter(x => x !== 'Outro convênio')) ins.append(h('span', { class: 'chip' }, n));
+  } else {
+    insSection.hidden = true;
+    document.getElementById('nav-convenios').hidden = true;
+  }
+
+  if (info.clinic.address) {
+    document.getElementById('address').textContent = info.clinic.address;
+    document.getElementById('map-link').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(info.clinic.address);
+    document.getElementById('onde').hidden = false;
+    document.getElementById('nav-onde').hidden = false;
+  }
 
   document.getElementById('phone-line').textContent = `WhatsApp ${info.clinic.phone}`;
 })();

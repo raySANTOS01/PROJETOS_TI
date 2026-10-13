@@ -16,7 +16,7 @@
   const toMin = t => { const [a, b] = t.split(':').map(Number); return a * 60 + b; };
   const wd = date => new Date(date + 'T12:00:00Z').getUTCDay();
   const patientMsg = (a, text) => whatsappUrl('55' + a.phone, text);
-  const confirmMsg = a => patientMsg(a, `Olá, ${a.name.split(' ')[0]}! Aqui é da ${ctx.clinic?.clinic_name || 'OralVitta'}. Sua consulta de ${a.service} está marcada para ${fmtNumeric(a.date)} às ${a.time}. Pode confirmar sua presença?`);
+  const confirmMsg = a => patientMsg(a, `Olá, ${a.name.split(' ')[0]}! Aqui é da ${ctx.clinic?.clinic_name || 'nossa clínica'}. Sua consulta de ${a.service} está marcada para ${fmtNumeric(a.date)} às ${a.time}. Pode confirmar sua presença?`);
 
   function openModal(...nodes) {
     clear(modal);
@@ -423,6 +423,7 @@
       clinic_name: h('input', { type: 'text', value: c.clinic_name }),
       clinic_phone: h('input', { type: 'text', value: c.clinic_phone }),
       clinic_whatsapp: h('input', { type: 'text', value: c.clinic_whatsapp }),
+      clinic_address: h('input', { type: 'text', value: c.clinic_address || '', maxlength: 160 }),
       clinic_instagram: h('input', { type: 'text', value: c.clinic_instagram }),
       slot_step_min: h('input', { type: 'number', min: 10, max: 120, step: 5, value: c.slot_step_min }),
       min_advance_min: h('input', { type: 'number', min: 0, step: 30, value: c.min_advance_min }),
@@ -431,6 +432,7 @@
     const form = h('form', { novalidate: true }, err,
       field('Nome da clínica', inputs.clinic_name),
       h('div', { class: 'form-row' }, field('Telefone exibido', inputs.clinic_phone), field('WhatsApp (com DDD)', inputs.clinic_whatsapp)),
+      field('Endereço', inputs.clinic_address, '(aparece no site com link para o mapa)'),
       field('Instagram', inputs.clinic_instagram),
       h('div', { class: 'form-row' }, field('Intervalo entre horários (min)', inputs.slot_step_min), field('Antecedência mínima (min)', inputs.min_advance_min)),
       field('Quantos dias à frente o site aceita agendamentos', inputs.max_days_ahead),

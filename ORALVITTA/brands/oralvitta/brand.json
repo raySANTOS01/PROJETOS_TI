@@ -1,0 +1,36 @@
+{
+  "id": "oralvitta",
+  "name": "OralVitta",
+  "subtitle": "Fortaleza",
+  "fullName": "OralVitta Fortaleza",
+  "city": "Fortaleza",
+  "logo": { "style": "mark", "file": "logo-mark.png", "favicon": "favicon.png" },
+  "colors": {
+    "teal-300": "#9ecddd", "teal-400": "#58b3d0", "teal-500": "#309cb9", "teal-600": "#23829d", "teal-700": "#166a85",
+    "navy-800": "#0f4c66", "navy-900": "#0a3a50",
+    "ink": "#12374a", "ink-soft": "#4b6b7b",
+    "mist-50": "#f5f9fc", "mist-100": "#e8f3f9", "mist-200": "#d3e7f1", "line": "#cde0ea"
+  },
+  "clinic": {
+    "phone": "(85) 98885-2046",
+    "whatsapp": "5585988852046",
+    "instagram": "oralvittafortaleza",
+    "address": ""
+  },
+  "showInsurances": true,
+  "insurances": ["Particular", "Clin", "Unimed Odonto", "Interodonto", "Bradesco Dental", "Odontoart", "BB Dental", "Hapvida Odonto", "OdontoPrev", "Outro convênio"],
+  "hours": { "weekdays": ["08:30", "17:30"], "saturday": ["08:30", "12:00"], "sunday": null },
+  "services": [
+    ["Prótese", "Reposição de dentes ausentes com peças fixas ou removíveis.", 60],
+    ["Extração", "Remoção de dente com avaliação e acompanhamento.", 30],
+    ["Implante", "Colocação de implante dentário.", 90],
+    ["Restauração", "Recuperação de dentes com cárie ou fraturas.", 60],
+    ["Clareamento", "Clareamento dental para um sorriso mais claro.", 60],
+    ["Odontopediatria", "Cuidados odontológicos para os pequenos.", 30],
+    ["Tratamento de canal", "Tratamento endodôntico para preservar o dente.", 90],
+    ["Aparelho ortodôntico", "Instalação e manutenção de aparelhos.", 30],
+    ["Tratamento periodontal", "Cuidado das gengivas e dos tecidos de suporte.", 60],
+    ["Atendimento de urgência", "Dor ou intercorrência: atendimento prioritário.", 30],
+    ["Toxina botulínica e preenchimento orofacial", "Harmonização orofacial.", 60]
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "dra-dentista",
+  "name": "Dra. Dentista",
+  "subtitle": "",
+  "fullName": "Clínica Dra. Dentista",
+  "city": "Fortaleza",
+  "logo": { "style": "wide", "file": "logo-wide.png", "favicon": "favicon.png" },
+  "colors": {
+    "teal-300": "#9db9e3", "teal-400": "#4d86d1", "teal-500": "#1f63c2", "teal-600": "#0c54b6", "teal-700": "#0c4aa0",
+    "navy-800": "#0a2f6b", "navy-900": "#081f4a",
+    "ink": "#13264a", "ink-soft": "#52627f",
+    "mist-50": "#f6f8fc", "mist-100": "#e9f0fa", "mist-200": "#d6e2f4", "line": "#d0dcee"
+  },
+  "clinic": {
+    "phone": "(85) 98199-2291",
+    "whatsapp": "5585981992291",
+    "instagram": "clinicadradentista",
+    "address": "Av. Prof. Gomes de Matos, 792, Fortaleza - CE"
+  },
+  "showInsurances": false,
+  "insurances": ["Particular", "Outro convênio"],
+  "hours": { "weekdays": ["08:00", "17:00"], "saturday": null, "sunday": null },
+  "services": [
+    ["Implantes e protocolos", "Implantes dentários e protocolos sobre implantes.", 90],
+    ["Próteses", "Reposição de dentes ausentes com peças fixas ou removíveis.", 60],
+    ["Aparelhos dentários", "Instalação e manutenção de aparelhos.", 30],
+    ["Facetas de resina e porcelana", "Facetas e lentes para harmonizar o sorriso.", 60],
+    ["Clareamento dentário", "Clareamento para um sorriso mais claro.", 60],
+    ["Tratamento de canal", "Tratamento endodôntico para preservar o dente.", 90],
+    ["Clínica geral", "Avaliação, limpeza e restaurações.", 30],
+    ["Cirurgia do siso", "Remoção de dentes do siso.", 60],
+    ["Odontopediatria", "Cuidados odontológicos para os pequenos.", 30],
+    ["Raio-X dentário", "Exame radiográfico.", 30],
+    ["Harmonização orofacial", "Procedimentos de harmonização.", 60]
+  ]
+}

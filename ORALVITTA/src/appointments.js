@@ -2,9 +2,6 @@ const { transaction, getSettings } = require('./db');
 const S = require('./schedule');
 const { HttpError, normalizePhone, isEmail, newCode, str } = require('./util');
 
-const INSURANCES = ['Particular', 'Clin', 'Unimed Odonto', 'Interodonto', 'Bradesco Dental',
-  'Odontoart', 'BB Dental', 'Hapvida Odonto', 'OdontoPrev', 'Outro convênio'];
-
 function present(row) {
   return {
     id: row.id,
@@ -35,7 +32,7 @@ function getByCode(db, code) {
  * Cria uma consulta garantindo, dentro de uma transação exclusiva, que o horário continua livre.
  * É a ÚNICA porta de entrada para gravar consultas (site e painel usam a mesma).
  */
-function createAppointment(db, input, now, { admin = false } = {}) {
+function createAppointment(db, input, now, { admin = false, insurances } = {}) {
   const name = str(input.name, 100, { required: true, label: 'Nome' });
   const phone = normalizePhone(input.phone);
   if (!phone) throw new HttpError(400, 'Informe um telefone válido com DDD.');
@@ -43,7 +40,7 @@ function createAppointment(db, input, now, { admin = false } = {}) {
   if (email && !isEmail(email)) throw new HttpError(400, 'E-mail inválido.');
   const notes = str(input.notes, 500, { label: 'Observações' });
   const insurance = str(input.insurance || 'Particular', 60, { label: 'Convênio' }) || 'Particular';
-  if (!INSURANCES.includes(insurance)) throw new HttpError(400, 'Convênio inválido.');
+  if (!insurances.includes(insurance)) throw new HttpError(400, 'Convênio inválido.');
   if (!S.isValidDate(input.date)) throw new HttpError(400, 'Data inválida.');
   const start = S.toMin(input.time);
   if (Number.isNaN(start)) throw new HttpError(400, 'Horário inválido.');
@@ -92,4 +89,4 @@ function overlappingAppointments(db, date, startMin, endMin) {
      AND a.start_min < ? AND ? < a.end_min ORDER BY a.start_min`).all(date, endMin, startMin).map(present);
 }
 
-module.exports = { INSURANCES, present, getByCode, createAppointment, listRange, overlappingAppointments, SELECT };
+module.exports = { present, getByCode, createAppointment, listRange, overlappingAppointments, SELECT };

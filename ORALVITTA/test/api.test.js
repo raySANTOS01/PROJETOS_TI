@@ -6,14 +6,16 @@ process.env.BOOK_RATE_MAX = '1000';
 const { open } = require('../src/db');
 const { ensureAdmin } = require('../src/auth');
 const { createApp } = require('../server');
+const { loadBrand } = require('../src/brand');
 
 let server, base, cookie;
 
 test.before(async () => {
   process.env.ADMIN_PASSWORD = 'senha-de-teste-123';
-  const db = open(':memory:');
+  const brand = loadBrand('oralvitta');
+  const db = open(':memory:', brand);
   ensureAdmin(db);
-  server = createApp(db).listen(0);
+  server = createApp(db, brand).listen(0);
   base = `http://127.0.0.1:${server.address().port}`;
 });
 test.after(() => server.close());
@@ -175,4 +177,27 @@ test('entradas maliciosas são tratadas como texto', async () => {
   assert.equal(r.status, 201);
   assert.equal(r.json.name, '<img src=x onerror=alert(1)>'); // armazenado literal; o front usa textContent
   assert.equal((await api('GET', "/api/public/slots?date=2026-10-29';DROP TABLE x&service=6")).status, 400);
+});
+
+test('marca Dra. Dentista: dados, convênios e serviços próprios', async () => {
+  const brand = loadBrand('dra-dentista');
+  const db = open(':memory:', brand);
+  const s = createApp(db, brand).listen(0);
+  const url = `http://127.0.0.1:${s.address().port}`;
+  try {
+    const info = await (await fetch(url + '/api/public/info')).json();
+    assert.equal(info.clinic.address, 'Av. Prof. Gomes de Matos, 792, Fortaleza - CE');
+    assert.equal(info.clinic.whatsapp, '5585981992291');
+    assert.equal(info.show_insurances, false);
+    assert.deepEqual(info.insurances, ['Particular', 'Outro convênio']);
+    assert.ok(info.services.some(x => x.name === 'Cirurgia do siso'));
+    assert.equal(info.hours[6].open, false); // sábado fechado por padrão
+    const page = await (await fetch(url + '/')).text();
+    assert.ok(!page.includes('{{') && page.includes('Clínica Dra. Dentista'));
+    assert.match(await (await fetch(url + '/theme.css')).text(), /--teal-600: #0c54b6/);
+    // convênio da OralVitta não vale aqui
+    const r = await fetch(url + '/api/public/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ service_id: 1, date: '2026-10-14', time: '10:00', name: 'Ana', phone: '85999990000', insurance: 'Unimed Odonto', consent: true }) });
+    assert.equal(r.status, 400);
+  } finally { s.close(); }
 });

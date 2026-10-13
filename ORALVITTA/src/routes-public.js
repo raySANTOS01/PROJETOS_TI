@@ -6,7 +6,7 @@ const A = require('./appointments');
 const { HttpError, normalizePhone, wrap } = require('./util');
 const { rateLimiter } = require('./auth');
 
-module.exports = function publicRoutes(db) {
+module.exports = function publicRoutes(db, brand) {
   const r = express.Router();
   const bookLimit = rateLimiter({ windowMs: 3600_000, max: Number(process.env.BOOK_RATE_MAX) || 10 });
   const lookupLimit = rateLimiter({ windowMs: 900_000, max: 20 });
@@ -22,8 +22,9 @@ module.exports = function publicRoutes(db) {
     res.json({
       clinic: {
         name: st.clinic_name, phone: st.clinic_phone,
-        whatsapp: st.clinic_whatsapp, instagram: st.clinic_instagram,
+        whatsapp: st.clinic_whatsapp, instagram: st.clinic_instagram, address: st.clinic_address || '',
       },
+      show_insurances: !!brand.showInsurances,
       services: db.prepare('SELECT id, name, description, duration_min FROM services WHERE active = 1 ORDER BY sort, id').all(),
       hours: db.prepare('SELECT weekday, open, start_min, end_min, break_start_min, break_end_min FROM hours ORDER BY weekday')
         .all().map(h => ({
@@ -32,7 +33,7 @@ module.exports = function publicRoutes(db) {
           break_start: h.break_start_min == null ? null : S.toHHMM(h.break_start_min),
           break_end: h.break_end_min == null ? null : S.toHHMM(h.break_end_min),
         })),
-      insurances: A.INSURANCES,
+      insurances: brand.insurances,
       max_days_ahead: Number(st.max_days_ahead),
       today: clock.now().date,
     });
@@ -54,7 +55,7 @@ module.exports = function publicRoutes(db) {
   r.post('/appointments', wrap((req, res) => {
     if (!bookLimit(req.ip)) throw new HttpError(429, 'Muitas tentativas. Tente novamente mais tarde.');
     if (req.body.consent !== true) throw new HttpError(400, 'É necessário concordar com o uso dos dados para agendar.');
-    const appt = A.createAppointment(db, req.body, clock.now());
+    const appt = A.createAppointment(db, req.body, clock.now(), { insurances: brand.insurances });
     res.status(201).json(appt);
   }));
 

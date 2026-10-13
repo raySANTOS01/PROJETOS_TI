@@ -30,6 +30,7 @@ body {
 }
 img, svg { max-width: 100%; display: block; }
 a { color: var(--teal-700); }
+h1, h2, h3, .stat b, .how li::before, .place address { font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
 h1, h2, h3 { font-family: var(--font-display); font-weight: 600; color: var(--navy-800); line-height: 1.15; margin: 0; }
 h1 { font-size: clamp(2.3rem, 5vw, 3.6rem); letter-spacing: -.01em; }
 h2 { font-size: clamp(1.8rem, 3.2vw, 2.5rem); }
@@ -110,6 +111,11 @@ section.block.alt { background: var(--white); border-block: 1px solid var(--line
 .cta-band .btn-primary:hover { background: var(--teal-400); }
 .site-footer { padding: 36px 0; font-size: .88rem; color: var(--ink-soft); border-top: 1px solid var(--line); background: var(--white); }
 .site-footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+.place { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 32px; }
+.place address { font-style: normal; font-family: var(--font-display); font-size: 1.6rem; color: var(--navy-800); }
+.brand-wide img { width: auto; height: 46px; border-radius: 0; }
+.brand .panel-tag { font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: var(--teal-500); font-weight: 600; border-left: 1px solid var(--line); padding-left: 10px; }
 
 /* ---------- formulários ---------- */
 label.field { display: block; margin-bottom: 18px; }

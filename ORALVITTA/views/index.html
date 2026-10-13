@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OralVitta Fortaleza — Agende sua consulta</title>
-  <meta name="description" content="Clínica odontológica em Fortaleza. Veja os serviços, horários de atendimento e agende sua consulta online.">
-  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <title>{{FULL}} — Agende sua consulta</title>
+  <meta name="description" content="Clínica odontológica em {{CITY}}. Veja os serviços, horários de atendimento e agende sua consulta online.">
+  <link rel="icon" href="{{FAVICON}}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/theme.css">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="/" aria-label="OralVitta Fortaleza — início">
-        <img src="/img/logo-mark.png" alt="">
-        <span class="word">OralVitta<small>Fortaleza</small></span>
-      </a>
+      <a class="{{BRAND_CLASS}}" href="/" aria-label="{{FULL}} — início">{{BRAND}}</a>
       <nav class="nav" aria-label="Principal">
         <a href="#servicos">Serviços</a>
         <a href="#atendimento">Atendimento</a>
-        <a href="#convenios">Convênios</a>
+        <a href="#convenios" id="nav-convenios">Convênios</a>
+        <a href="#onde" id="nav-onde" hidden>Onde estamos</a>
         <a href="/consulta">Minha consulta</a>
         <a class="btn btn-primary btn-sm" href="/agendar">Agendar consulta</a>
       </nav>
@@ -32,7 +31,7 @@
     <section class="hero">
       <div class="wrap">
         <div>
-          <span class="eyebrow">Odontologia em Fortaleza</span>
+          <span class="eyebrow">Odontologia em {{CITY}}</span>
           <h1>Agende sua consulta com facilidade.</h1>
           <p class="lead">Escolha o serviço, veja os horários realmente disponíveis e reserve o seu na hora, em poucos passos.</p>
           <div class="actions">
@@ -82,11 +81,24 @@
       </div>
     </section>
 
+    <section class="block alt" id="onde" hidden>
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Onde estamos</span>
+          <h2>Venha nos visitar</h2>
+        </div>
+        <div class="place">
+          <address id="address"></address>
+          <a class="btn btn-ghost" id="map-link" target="_blank" rel="noopener">Abrir no mapa</a>
+        </div>
+      </div>
+    </section>
+
     <section class="cta-band">
       <div class="wrap">
         <div>
           <h2>Pronto para marcar?</h2>
-          <p>Prefere falar com a gente? <span id="phone-line">WhatsApp (85) 98885-2046</span></p>
+          <p>Prefere falar com a gente? <span id="phone-line"></span></p>
         </div>
         <div class="actions">
           <a class="btn btn-primary" href="/agendar">Agendar online</a>
@@ -97,7 +109,7 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <span>© OralVitta Fortaleza</span>
+      <span>© {{FULL}}</span>
       <span><a href="/admin">Área da clínica</a></span>
     </div>
   </footer>

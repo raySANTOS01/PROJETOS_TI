@@ -4,22 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Painel — OralVitta Fortaleza</title>
-  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <title>Painel — {{FULL}}</title>
+  <link rel="icon" href="{{FAVICON}}" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/theme.css">
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body class="admin">
   <!-- Login -->
   <main class="login-screen" id="login-screen" hidden>
     <form class="panel login-card" id="login-form" novalidate>
-      <a class="brand" href="/" aria-label="Voltar ao site">
-        <img src="/img/logo-mark.png" alt="">
-        <span class="word">OralVitta<small>Fortaleza</small></span>
-      </a>
+      <a class="{{BRAND_CLASS}}" href="/" aria-label="Voltar ao site">{{BRAND}}</a>
       <h1>Painel da clínica</h1>
       <p class="muted">Acesso restrito à equipe.</p>
       <div class="alert error" id="login-error" hidden role="alert"></div>
@@ -32,10 +30,7 @@
   <!-- App -->
   <div class="shell" id="app" hidden>
     <aside class="sidebar">
-      <a class="brand" href="/" aria-label="Ver site">
-        <img src="/img/logo-mark.png" alt="">
-        <span class="word">OralVitta<small>Painel</small></span>
-      </a>
+      <a class="{{BRAND_CLASS}}" href="/" aria-label="Ver site">{{BRAND_PANEL}}</a>
       <nav id="side-nav" aria-label="Painel">
         <a href="#visao" data-view="visao">Visão geral</a>
         <a href="#agenda" data-view="agenda">Agenda</a>
