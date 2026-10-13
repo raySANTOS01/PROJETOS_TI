@@ -51,12 +51,12 @@ body.admin { background: var(--mist-50); }
 .tl-hour { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line); font-size: .74rem; color: var(--ink-soft); padding: 2px 0 0 8px; pointer-events: none; }
 .tl-hour.half { border-top-style: dashed; border-color: #e3eef2; }
 .tl-click { position: absolute; left: 60px; right: 0; background: transparent; border: 0; cursor: pointer; }
-.tl-click:hover { background: rgba(43, 165, 177, .08); }
+.tl-click:hover { background: rgba(48, 156, 185, .08); }
 .tl-off { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(135deg, #eef3f5, #eef3f5 6px, #e6edf0 6px, #e6edf0 12px); }
 .tl-item { position: absolute; left: 66px; right: 10px; border-radius: 8px; padding: 6px 12px; overflow: hidden; font-size: .86rem; text-align: left; font-family: inherit; cursor: pointer; border: 1px solid; line-height: 1.3; }
 .tl-item b { display: block; font-weight: 600; }
 .tl-item.scheduled { background: #fdf4e7; border-color: #e8cfa3; color: #6b4310; }
-.tl-item.confirmed { background: #dff1f4; border-color: var(--teal-400); color: var(--navy-900); }
+.tl-item.confirmed { background: #dcedf6; border-color: var(--teal-400); color: var(--navy-900); }
 .tl-item.completed { background: #e9f6f0; border-color: #b4dccb; color: #14543d; }
 .tl-item.no_show { background: #fbefee; border-color: #e2b8b4; color: var(--danger); }
 .tl-item.cancelled { background: #f4f6f7; border-color: #d6dde0; color: #6b7a82; text-decoration: line-through; }

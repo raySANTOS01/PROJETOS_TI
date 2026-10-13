@@ -48,7 +48,7 @@ Variáveis opcionais: `PORT`, `DB_FILE` (caminho do banco, padrão `data/oralvit
 
 - As **durações dos serviços** (30/60/90 min) e as **descrições curtas** são sugestões iniciais — ajuste em *Painel → Serviços*.
 - Horário inicial segue as artes: seg–sex 8h30–17h30, sáb 8h30–12h, domingo fechado. Altere em *Disponibilidade*.
-- O logotipo em `public/img/logo-mark.svg` é uma **aproximação**; troque pelo arquivo original (mantendo o nome, ou ajustando os `<img>` nas páginas).
+- O logotipo em `public/img/logo.png` é o logotipo completo e `logo-mark.png` / `favicon.png` são recortes dele (cabeçalho e ícone da aba); para trocar, substitua esses arquivos mantendo os nomes.
 - Não há envio automático de WhatsApp/SMS/e-mail: os botões abrem o WhatsApp com a mensagem pronta. Integração automática (API do WhatsApp Business) é uma evolução possível.
 
 ## Segurança

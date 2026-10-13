@@ -1,17 +1,17 @@
 :root {
-  --teal-300: #8fd0d8;
-  --teal-400: #4fb8c2;
-  --teal-500: #2ba5b1;
-  --teal-600: #1b8a99;
-  --teal-700: #0f6c80;
-  --navy-800: #0b4a63;
-  --navy-900: #083a50;
+  --teal-300: #9ecddd;
+  --teal-400: #58b3d0;
+  --teal-500: #309cb9;
+  --teal-600: #23829d;
+  --teal-700: #166a85;
+  --navy-800: #0f4c66;
+  --navy-900: #0a3a50;
   --ink: #12374a;
   --ink-soft: #4b6b7b;
-  --mist-50: #f6fafc;
-  --mist-100: #eaf4f7;
-  --mist-200: #d5e8ee;
-  --line: #cfe2e9;
+  --mist-50: #f5f9fc;
+  --mist-100: #e8f3f9;
+  --mist-200: #d3e7f1;
+  --line: #cde0ea;
   --white: #fff;
   --ok: #1b7f5c;
   --warn: #a8641a;
@@ -43,7 +43,7 @@ p { margin: 0; }
 
 /* ---------- logo ---------- */
 .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--teal-700); }
-.brand img { width: 40px; height: 40px; }
+.brand img { width: 44px; height: 44px; border-radius: 4px; }
 .brand .word { font-weight: 300; font-size: 1.55rem; letter-spacing: -.01em; line-height: 1; }
 .brand .word small { display: block; font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; margin-top: 4px; color: var(--teal-500); font-weight: 500; }
 
@@ -196,7 +196,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--teal-400); 
 .details dd { margin: 0; font-weight: 500; text-align: right; color: var(--navy-800); }
 .badge { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: .78rem; font-weight: 600; letter-spacing: .02em; }
 .badge.scheduled { background: #fdf4e7; color: var(--warn); }
-.badge.confirmed { background: #e3f3f6; color: var(--teal-700); }
+.badge.confirmed { background: #e0f0f7; color: var(--teal-700); }
 .badge.completed { background: #e9f6f0; color: var(--ok); }
 .badge.cancelled { background: #f1f1f1; color: #6b7a82; }
 .badge.no_show { background: #fbefee; color: var(--danger); }
