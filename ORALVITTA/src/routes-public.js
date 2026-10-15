@@ -5,6 +5,7 @@ const clock = require('./clock');
 const A = require('./appointments');
 const { HttpError, normalizePhone, wrap } = require('./util');
 const { rateLimiter } = require('./auth');
+const { fieldSpec } = require('./purchase');
 
 module.exports = function publicRoutes(db, brand) {
   const r = express.Router();
@@ -23,6 +24,7 @@ module.exports = function publicRoutes(db, brand) {
       vertical: brand.vertical,
       vocab: brand.vocab,
       ask_insurance: brand.askInsurance !== false,
+      purchase_fields: brand.vertical === 'loja' ? fieldSpec(db, brand) : [],
       booking: { notes_label: brand.copy.bookingNotesLabel || 'Observações', notes_hint: brand.copy.bookingNotesHint || '' },
       clinic: {
         name: st.clinic_name, phone: st.clinic_phone,
@@ -61,7 +63,7 @@ module.exports = function publicRoutes(db, brand) {
   r.post('/appointments', wrap((req, res) => {
     if (!bookLimit(req.ip)) throw new HttpError(429, 'Muitas tentativas. Tente novamente mais tarde.');
     if (req.body.consent !== true) throw new HttpError(400, 'É necessário concordar com o uso dos dados para agendar.');
-    const appt = A.createAppointment(db, req.body, clock.now(), { insurances: brand.insurances });
+    const appt = A.createAppointment(db, req.body, clock.now(), { insurances: brand.insurances, fields: brand.vertical === 'loja' ? fieldSpec(db, brand) : [] });
     res.status(201).json(appt);
   }));
 
@@ -76,7 +78,7 @@ module.exports = function publicRoutes(db, brand) {
 
   r.post('/lookup', wrap((req, res) => {
     const row = findOwn(req);
-    const { email, notes, source, id, ...safe } = A.present(row);
+    const { email, notes, source, id, details, ...safe } = A.present(row);
     res.json(safe);
   }));
 
@@ -88,7 +90,7 @@ module.exports = function publicRoutes(db, brand) {
       throw new HttpError(409, 'Esta consulta já começou ou passou.');
     }
     db.prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ?").run(row.id);
-    const { email, notes, source, id, ...safe } = A.present({ ...row, status: 'cancelled' });
+    const { email, notes, source, id, details, ...safe } = A.present({ ...row, status: 'cancelled' });
     res.json(safe);
   }));
 

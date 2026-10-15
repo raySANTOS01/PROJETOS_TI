@@ -11,7 +11,7 @@
   const V = info.vocab, cap = t => t.charAt(0).toUpperCase() + t.slice(1);
   const state = {
     step: 1, service: null, month: info.today.slice(0, 7), days: [], date: null, slots: null, time: null,
-    form: { name: '', phone: '', email: '', insurance: 'Particular', notes: '', consent: false },
+    form: { name: '', phone: '', email: '', insurance: 'Particular', notes: '', consent: false, ...Object.fromEntries(info.purchase_fields.map(x => [x.key, ''])) },
     result: null,
   };
   const lastDate = OV.addDays(info.today, info.max_days_ahead);
@@ -150,6 +150,7 @@
     const form = h('form', { novalidate: true },
       err,
       h('label', { class: 'field' }, h('span', {}, 'Nome completo'), bind('f-name', 'name')(h('input', { type: 'text', autocomplete: 'name', maxlength: 100, required: true }))),
+      ...info.purchase_fields.map(x => Loja.purchaseField(x, f)),
       h('div', { class: 'form-row' },
         h('label', { class: 'field' }, h('span', {}, 'Telefone / WhatsApp'), phoneInput),
         h('label', { class: 'field' }, h('span', {}, 'E-mail ', h('em', {}, '(opcional)')), bind('f-email', 'email')(h('input', { type: 'email', autocomplete: 'email', maxlength: 254 })))),
@@ -163,6 +164,7 @@
       ev.preventDefault();
       err.hidden = true;
       if (!f.name.trim()) return showError(err, 'Informe seu nome.');
+      for (const x of info.purchase_fields) if (x.required && !String(f[x.key]).trim()) return showError(err, `${x.label}: preenchimento obrigatório.`);
       if (f.phone.replace(/\D/g, '').length < 10) return showError(err, 'Informe um telefone válido com DDD.');
       if (!f.consent) return showError(err, 'É necessário concordar para continuar.');
       submit.disabled = true; submit.textContent = 'Confirmando…';

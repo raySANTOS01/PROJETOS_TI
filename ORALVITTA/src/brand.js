@@ -38,6 +38,7 @@ function loadBrand(id = process.env.BRAND || defaultId()) {
   brand.copy = { ...DEFAULT_COPY, ...brand.copy };
   brand.design = { ...DEFAULT_DESIGN, ...brand.design, fonts: { ...DEFAULT_DESIGN.fonts, ...(brand.design || {}).fonts } };
   brand.gallery ??= [];
+  brand.purchaseFields ??= [];
   brand.vocab = { appt: 'consulta', appts: 'consultas', ...brand.vocab };
   const hasImg = f => fs.existsSync(path.join(brand.imgDir, f));
   if (brand.design.hero === 'image' && !hasImg('hero.jpg')) {

@@ -90,6 +90,22 @@ const Loja = (() => {
     });
   }
 
-  return { info, Cart, money, priceLabel, productCard, placeholder, chrome, hoursLines };
+  // Campo do formulário de compra (texto com sugestões ou lista de opções), ligado a form[f.key]
+  function purchaseField(f, form) {
+    const isSelect = f.type === 'select';
+    const el = isSelect
+      ? h('select', {}, h('option', { value: '' }, 'Selecione…'), ...(f.options || []).map(o => h('option', { value: o }, o)))
+      : h('input', { type: 'text', maxlength: f.max, autocomplete: 'off' });
+    let list = null;
+    if (!isSelect && f.suggestions?.length) {
+      list = h('datalist', { id: 'dl-' + f.key }, f.suggestions.map(o => h('option', { value: o })));
+      el.setAttribute('list', 'dl-' + f.key);
+    }
+    el.value = form[f.key] || '';
+    el.addEventListener(isSelect ? 'change' : 'input', () => { form[f.key] = el.value; });
+    return h('label', { class: 'field' }, h('span', {}, f.label, !f.required && h('em', {}, ' (opcional)')), el, list);
+  }
+
+  return { info, Cart, purchaseField, money, priceLabel, productCard, placeholder, chrome, hoursLines };
 })();
 document.addEventListener('DOMContentLoaded', () => { Loja.chrome(); });

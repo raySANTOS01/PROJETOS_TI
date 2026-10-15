@@ -44,6 +44,7 @@
   // =====================================================================
   let orderFilter = 'open';
   async function pedidos() {
+    await loadCtx();
     const all = await api('/api/admin/orders');
     const shown = orderFilter === 'all' ? all : orderFilter === 'open' ? all.filter(o => ['new', 'contacted', 'confirmed'].includes(o.status)) : all.filter(o => o.status === orderFilter);
     const tabs = [['open', 'Em andamento'], ['new', 'Novos'], ['delivered', 'Entregues'], ['cancelled', 'Cancelados'], ['all', 'Todos']];
@@ -62,8 +63,7 @@
           total != null && h('p', { class: 'muted' }, `Total estimado: ${money(total)}`),
           h('dl', { class: 'details wide' },
             h('div', {}, h('dt', {}, 'Cliente'), h('dd', {}, `${o.name} · ${fmtPhone(o.phone)}`)),
-            o.recipient && h('div', {}, h('dt', {}, 'Para'), h('dd', {}, o.recipient)),
-            h('div', {}, h('dt', {}, 'Endereço'), h('dd', {}, o.address)),
+            ...(ctx.fields || []).filter(x => o.details?.[x.key]).map(x => h('div', {}, h('dt', {}, x.label), h('dd', {}, o.details[x.key]))),
             (o.delivery_date || o.delivery_time) && h('div', {}, h('dt', {}, 'Entrega desejada'), h('dd', {}, `${o.delivery_date ? fmtNumeric(o.delivery_date) : ''} ${o.delivery_time || ''}`.trim())),
             o.card_message && h('div', {}, h('dt', {}, 'Cartão'), h('dd', {}, o.card_message)),
             o.notes && h('div', {}, h('dt', {}, 'Observações'), h('dd', {}, o.notes))),
@@ -211,6 +211,7 @@
 
   K.extend('loja', {
     views: { visao, pedidos, catalogo, contatos },
+    configExtra: true,
     nav: () => [['visao', 'Visão geral'], ['pedidos', 'Pedidos'], ['catalogo', 'Catálogo'], ['agenda', `Agenda de ${V().appts}`],
       ['disponibilidade', 'Disponibilidade'], ['servicos', `Tipos de ${V().appt}`], ['contatos', 'Contatos'], ['config', 'Configurações']],
   });

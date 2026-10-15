@@ -5,6 +5,7 @@ const clock = require('./clock');
 const A = require('./appointments');
 const auth = require('./auth');
 const { HttpError, str, wrap } = require('./util');
+const { fieldSpec } = require('./purchase');
 
 const STATUSES = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'];
 
@@ -75,7 +76,7 @@ module.exports = function adminRoutes(db, brand, opts = {}) {
   }));
 
   r.post('/appointments', wrap((req, res) => {
-    res.status(201).json(A.createAppointment(db, req.body, clock.now(), { admin: true, insurances: brand.insurances }));
+    res.status(201).json(A.createAppointment(db, req.body, clock.now(), { admin: true, insurances: brand.insurances, fields: brand.vertical === 'loja' ? fieldSpec(db, brand) : [] }));
   }));
 
   r.patch('/appointments/:id', wrap((req, res) => {
@@ -198,6 +199,8 @@ module.exports = function adminRoutes(db, brand, opts = {}) {
     clinic_phone: v => str(v, 30, { required: true, label: 'Telefone' }),
     clinic_whatsapp: v => { const d = String(v).replace(/\D/g, ''); if (d.length < 10 || d.length > 13) throw new HttpError(400, 'WhatsApp inválido.'); return d.length <= 11 ? '55' + d : d; },
     clinic_address: v => str(v, 160, { label: 'Endereço' }),
+    payment_methods: v => String(v || '').split('\n').map(x => x.trim()).filter(Boolean).slice(0, 12).map(x => str(x, 40, { label: 'Forma de pagamento' })).join('\n'),
+    clinic_whatsapp2: v => { const d = String(v || '').replace(/\D/g, ''); if (!d) return ''; if (d.length < 10 || d.length > 13) throw new HttpError(400, 'Segundo WhatsApp inválido.'); return d.length <= 11 ? '55' + d : d; },
     clinic_instagram: v => str(v, 40, { label: 'Instagram' }).replace(/^@/, ''),
     slot_step_min: v => intRange(v, 10, 120, 'Intervalo entre horários'),
     min_advance_min: v => intRange(v, 0, 10080, 'Antecedência mínima'),

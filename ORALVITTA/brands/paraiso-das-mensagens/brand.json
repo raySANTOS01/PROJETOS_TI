@@ -58,8 +58,8 @@
     "eyebrow": "Desde 2001 em Fortaleza",
     "heroTitle": "Emoções entregues em Fortaleza.",
     "heroLead": "Flores, cestas de café da manhã, homenagens ao vivo, telemensagens e presentes para celebrar quem você ama, com entrega em Fortaleza e região metropolitana.",
-    "bookingNotesLabel": "Endereço, quem vai receber e recado",
-    "bookingNotesHint": "Informe o endereço da homenagem, o nome de quem vai receber e a mensagem que deseja transmitir."
+    "bookingNotesLabel": "Observações",
+    "bookingNotesHint": "Alguma informação importante para a equipe?"
   },
   "about": {
     "title": "Estamos no mercado de homenagens desde 2001",
@@ -284,6 +284,55 @@
           "name": "Pelúcias"
         }
       ]
+    }
+  ],
+  "paymentMethods": [
+    "Pix",
+    "Cartão de crédito",
+    "Cartão de débito",
+    "Dinheiro"
+  ],
+  "purchaseFields": [
+    {
+      "key": "recipient",
+      "label": "Pessoa homenageada",
+      "required": true,
+      "max": 100
+    },
+    {
+      "key": "address",
+      "label": "Endereço com bairro e um ponto de referência",
+      "required": true,
+      "max": 250
+    },
+    {
+      "key": "occasion",
+      "label": "Ocasião",
+      "required": true,
+      "max": 80,
+      "suggestions": [
+        "Aniversário",
+        "Pedido de namoro",
+        "Pedido de casamento",
+        "Dia dos Namorados",
+        "Aniversário de namoro",
+        "Nascimento",
+        "Formatura",
+        "Agradecimento",
+        "Pedido de desculpas"
+      ]
+    },
+    {
+      "key": "from",
+      "label": "Quem dedica",
+      "required": true,
+      "max": 100
+    },
+    {
+      "key": "payment",
+      "label": "Forma de pagamento",
+      "required": true,
+      "type": "payment"
     }
   ]
 }

@@ -1,6 +1,7 @@
 const { transaction, getSettings } = require('./db');
 const S = require('./schedule');
 const { HttpError, normalizePhone, isEmail, newCode, str } = require('./util');
+const { readDetails } = require('./purchase');
 
 function present(row) {
   return {
@@ -18,6 +19,7 @@ function present(row) {
     insurance: row.insurance,
     notes: row.notes,
     source: row.source,
+    details: JSON.parse(row.details || '{}'),
     created_at: row.created_at,
   };
 }
@@ -32,7 +34,7 @@ function getByCode(db, code) {
  * Cria uma consulta garantindo, dentro de uma transação exclusiva, que o horário continua livre.
  * É a ÚNICA porta de entrada para gravar consultas (site e painel usam a mesma).
  */
-function createAppointment(db, input, now, { admin = false, insurances } = {}) {
+function createAppointment(db, input, now, { admin = false, insurances, fields = [] } = {}) {
   const name = str(input.name, 100, { required: true, label: 'Nome' });
   const phone = normalizePhone(input.phone);
   if (!phone) throw new HttpError(400, 'Informe um telefone válido com DDD.');
@@ -45,6 +47,7 @@ function createAppointment(db, input, now, { admin = false, insurances } = {}) {
   const start = S.toMin(input.time);
   if (Number.isNaN(start)) throw new HttpError(400, 'Horário inválido.');
   const serviceId = Number(input.service_id);
+  const details = readDetails(fields, input, { required: !admin });
 
   return transaction(db, () => {
     const service = db.prepare('SELECT * FROM services WHERE id = ? AND active = 1').get(serviceId);
@@ -68,10 +71,10 @@ function createAppointment(db, input, now, { admin = false, insurances } = {}) {
       if (!getByCode(db, code)) break;
     }
     const info = db.prepare(
-      `INSERT INTO appointments(code, service_id, date, start_min, end_min, name, phone, email, insurance, notes, status, source)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+      `INSERT INTO appointments(code, service_id, date, start_min, end_min, name, phone, email, insurance, notes, status, source, details)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
       code, service.id, input.date, start, start + service.duration_min,
-      name, phone, email, insurance, notes, admin ? 'confirmed' : 'scheduled', admin ? 'admin' : 'site');
+      name, phone, email, insurance, notes, admin ? 'confirmed' : 'scheduled', admin ? 'admin' : 'site', JSON.stringify(details));
     return present(db.prepare(`${SELECT} WHERE a.id = ?`).get(Number(info.lastInsertRowid)));
   });
 }

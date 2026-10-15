@@ -33,7 +33,7 @@
     if (!ctx.hours || force) ctx.hours = await api('/api/admin/hours');
     if (!ctx.services || force) ctx.services = await api('/api/admin/services');
     if (!ctx.clinic || force) ctx.clinic = await api('/api/admin/settings');
-    if (!ctx.insurances) ctx.insurances = (await api('/api/public/info')).insurances;
+    if (!ctx.insurances || force) { const i = await api('/api/public/info'); ctx.insurances = i.insurances; ctx.fields = i.purchase_fields; }
   }
 
   const field = (label, input, hint) => h('label', { class: 'field' }, h('span', {}, label, hint && h('em', {}, ' ' + hint)), input);
@@ -224,6 +224,7 @@
         h('div', {}, h('dt', {}, 'Telefone'), h('dd', {}, fmtPhone(a.phone))),
         a.email && h('div', {}, h('dt', {}, 'E-mail'), h('dd', {}, a.email)),
         ME.ask_insurance && h('div', {}, h('dt', {}, 'Convênio'), h('dd', {}, a.insurance)),
+        ...(ctx.fields || []).filter(x => a.details?.[x.key]).map(x => h('div', {}, h('dt', {}, x.label), h('dd', {}, a.details[x.key]))),
         a.notes && h('div', {}, h('dt', {}, 'Observações'), h('dd', {}, a.notes)),
         h('div', {}, h('dt', {}, 'Código'), h('dd', {}, `${a.code} · ${a.source === 'admin' ? 'marcada no painel' : 'marcada pelo site'}`))),
       actions);
@@ -290,6 +291,7 @@
     const email = h('input', { type: 'email' });
     const ins = h('select', {}, ctx.insurances.map(i => h('option', { value: i }, i)));
     const notes = h('textarea', { maxlength: 500 });
+    const extra = {}; const extraEls = (ctx.fields || []).map(x => { const el = x.type === 'select' ? h('select', {}, h('option', { value: '' }, '—'), ...x.options.map(o => h('option', { value: o }, o))) : h('input', { type: 'text', maxlength: x.max }); el.addEventListener(x.type === 'select' ? 'change' : 'input', () => { extra[x.key] = el.value; }); return field(x.label, el, '(opcional)'); });
     const save = h('button', { type: 'submit', class: 'btn btn-primary', disabled: true }, 'Agendar');
     let chosen = null;
     const picker = slotPicker(t => { chosen = t; save.disabled = false; });
@@ -298,13 +300,14 @@
 
     const form = h('form', { novalidate: true }, err,
       field('Serviço', svc), field('Data', dt), picker.el,
-      h('div', { class: 'form-row' }, field('Nome do paciente', name), field('Telefone', phone)),
+      h('div', { class: 'form-row' }, field(ME.vertical === 'loja' ? 'Nome do cliente' : 'Nome do paciente', name), field('Telefone', phone)),
+      ...extraEls,
       h('div', { class: 'form-row' }, field('E-mail', email, '(opcional)'), ME.ask_insurance ? field('Convênio', ins) : null),
       field('Observações', notes, '(opcional)'), h('div', { class: 'modal-actions' }, save));
     form.addEventListener('submit', async ev => {
       ev.preventDefault(); err.hidden = true;
       try {
-        await api('/api/admin/appointments', { method: 'POST', body: { service_id: svc.value, date: dt.value, time: chosen, name: name.value, phone: phone.value, email: email.value, insurance: ins.value, notes: notes.value } });
+        await api('/api/admin/appointments', { method: 'POST', body: { service_id: svc.value, date: dt.value, time: chosen, name: name.value, phone: phone.value, email: email.value, insurance: ins.value, notes: notes.value, ...extra } });
         modal.close(); toast(`${cap(V.appt)} agendada`); agendaDate = dt.value; location.hash === '#agenda' ? route() : (location.hash = '#agenda');
       } catch (e) { showErr(err, e); reload(chosen); }
     });
@@ -438,6 +441,7 @@
       clinic_phone: h('input', { type: 'text', value: c.clinic_phone }),
       clinic_whatsapp: h('input', { type: 'text', value: c.clinic_whatsapp }),
       clinic_address: h('input', { type: 'text', value: c.clinic_address || '', maxlength: 160 }),
+      ...(ME.vertical === 'loja' ? { clinic_whatsapp2: h('input', { type: 'text', value: c.clinic_whatsapp2 || '' }), payment_methods: Object.assign(h('textarea', { maxlength: 400 }), { value: c.payment_methods || '' }) } : {}),
       clinic_instagram: h('input', { type: 'text', value: c.clinic_instagram }),
       slot_step_min: h('input', { type: 'number', min: 10, max: 120, step: 5, value: c.slot_step_min }),
       min_advance_min: h('input', { type: 'number', min: 0, step: 30, value: c.min_advance_min }),
@@ -447,6 +451,8 @@
       field('Nome da clínica', inputs.clinic_name),
       h('div', { class: 'form-row' }, field('Telefone exibido', inputs.clinic_phone), field('WhatsApp (com DDD)', inputs.clinic_whatsapp)),
       field('Endereço', inputs.clinic_address, '(aparece no site com link para o mapa)'),
+      inputs.clinic_whatsapp2 && field('Segundo WhatsApp', inputs.clinic_whatsapp2, '(opcional)'),
+      inputs.payment_methods && field('Formas de pagamento', inputs.payment_methods, '(uma por linha; aparecem no formulário de compra)'),
       field('Instagram', inputs.clinic_instagram),
       h('div', { class: 'form-row' }, field('Intervalo entre horários (min)', inputs.slot_step_min), field('Antecedência mínima (min)', inputs.min_advance_min)),
       field('Quantos dias à frente o site aceita agendamentos', inputs.max_days_ahead),

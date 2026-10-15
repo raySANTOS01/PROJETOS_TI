@@ -5,7 +5,8 @@
   try { [info, cat] = await Promise.all([Loja.info(), api('/api/public/catalog')]); }
   catch (e) { root.append(h('div', { class: 'alert error' }, e.message)); return; }
   const byId = Object.fromEntries(cat.categories.flatMap(c => c.products).map(p => [p.id, p]));
-  const form = { name: '', phone: '', recipient: '', address: '', delivery_date: '', delivery_time: '', card_message: '', notes: '', consent: false };
+  const fields = info.purchase_fields;
+  const form = { name: '', phone: '', delivery_date: '', delivery_time: '', card_message: '', notes: '', consent: false, ...Object.fromEntries(fields.map(f => [f.key, ''])) };
 
   function view() {
     clear(root);
@@ -38,12 +39,10 @@
     const submit = h('button', { type: 'submit', class: 'btn btn-primary btn-block' }, 'Enviar pedido');
     const today = info.today;
     const f = h('form', { class: 'panel', novalidate: true }, err,
-      h('h2', {}, 'Dados da entrega'),
-      h('div', { class: 'form-row' },
-        h('label', { class: 'field' }, h('span', {}, 'Seu nome'), bind('name', h('input', { type: 'text', maxlength: 100, autocomplete: 'name', required: true }))),
-        h('label', { class: 'field' }, h('span', {}, 'Seu WhatsApp'), phone)),
-      h('label', { class: 'field' }, h('span', {}, 'Nome de quem vai receber ', h('em', {}, '(opcional)')), bind('recipient', h('input', { type: 'text', maxlength: 100 }))),
-      h('label', { class: 'field' }, h('span', {}, 'Endereço de entrega'), bind('address', h('input', { type: 'text', maxlength: 250, placeholder: 'Rua, número, bairro e ponto de referência', required: true }))),
+      h('h2', {}, 'Dados do pedido'),
+      h('label', { class: 'field' }, h('span', {}, 'Seu nome completo'), bind('name', h('input', { type: 'text', maxlength: 100, autocomplete: 'name', required: true }))),
+      ...fields.map(f => Loja.purchaseField(f, form)),
+      h('label', { class: 'field' }, h('span', {}, 'Seu WhatsApp'), phone),
       h('div', { class: 'form-row' },
         h('label', { class: 'field' }, h('span', {}, 'Data desejada ', h('em', {}, '(opcional)')), bind('delivery_date', h('input', { type: 'date', min: today }))),
         h('label', { class: 'field' }, h('span', {}, 'Horário desejado ', h('em', {}, '(opcional)')), bind('delivery_time', h('input', { type: 'time' })))),
@@ -54,9 +53,9 @@
 
     f.addEventListener('submit', async ev => {
       ev.preventDefault(); err.hidden = true;
-      if (!form.name.trim()) return show(err, 'Informe seu nome.');
+      if (!form.name.trim()) return show(err, 'Informe seu nome completo.');
+      for (const f of fields) if (f.required && !String(form[f.key]).trim()) return show(err, `${f.label}: preenchimento obrigatório.`);
       if (form.phone.replace(/\D/g, '').length < 10) return show(err, 'Informe um WhatsApp válido com DDD.');
-      if (!form.address.trim()) return show(err, 'Informe o endereço de entrega.');
       if (!form.consent) return show(err, 'É necessário concordar para enviar o pedido.');
       submit.disabled = true; submit.textContent = 'Enviando…';
       try {
@@ -76,11 +75,10 @@
   function done(r) {
     clear(root);
     const lines = [`Olá! Acabei de fazer um pedido pelo site (código ${r.code}).`, '', 'Itens:', ...r.items.map(i => `- ${i.qty}x ${i.name}`), ''];
-    if (form.recipient) lines.push(`Para: ${form.recipient}`);
-    lines.push(`Endereço: ${form.address}`);
+    lines.push(`Seu nome completo: ${form.name}`);
+    for (const f of fields) if (form[f.key]) lines.push(`${f.label}: ${form[f.key]}`);
     if (form.delivery_date) lines.push(`Entrega: ${fmtNumeric(form.delivery_date)}${form.delivery_time ? ' às ' + form.delivery_time : ''}`);
-    if (form.card_message) lines.push(`Cartão: ${form.card_message}`);
-    lines.push(`Nome: ${form.name}`);
+    if (form.card_message) lines.push(`Mensagem do cartão: ${form.card_message}`);
     root.append(h('div', { class: 'panel' }, h('div', { class: 'ticket' },
       h('div', { class: 'check-ico', 'aria-hidden': 'true' }, '✓'),
       h('h2', {}, 'Pedido enviado!'),

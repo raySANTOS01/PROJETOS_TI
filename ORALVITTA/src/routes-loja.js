@@ -8,6 +8,7 @@ const clock = require('./clock');
 const { transaction } = require('./db');
 const { rateLimiter } = require('./auth');
 const { HttpError, normalizePhone, newCode, str, wrap } = require('./util');
+const { fieldSpec, readDetails } = require('./purchase');
 
 const ORDER_STATUSES = ['new', 'contacted', 'confirmed', 'delivered', 'cancelled'];
 const IMAGE_RE = /^(\/img\/|\/uploads\/)[A-Za-z0-9._-]+$/;
@@ -56,11 +57,12 @@ function publicLoja(db, brand) {
     if (!orderLimit(req.ip)) throw new HttpError(429, 'Muitas tentativas. Tente novamente mais tarde.');
     const b = req.body;
     if (b.consent !== true) throw new HttpError(400, 'É necessário concordar com o uso dos dados para enviar o pedido.');
-    const name = str(b.name, 100, { required: true, label: 'Seu nome' });
+    const name = str(b.name, 100, { required: true, label: 'Seu nome completo' });
     const phone = normalizePhone(b.phone);
     if (!phone) throw new HttpError(400, 'Informe um telefone/WhatsApp válido com DDD.');
-    const recipient = str(b.recipient, 100, { label: 'Nome de quem vai receber' });
-    const address = str(b.address, 250, { required: true, label: 'Endereço de entrega' });
+    const details = readDetails(fieldSpec(db, brand), b);
+    const recipient = details.recipient || '';
+    const address = details.address || '';
     const card = str(b.card_message, 300, { label: 'Mensagem do cartão' });
     const notes = str(b.notes, 500, { label: 'Observações' });
     let date = '';
@@ -90,8 +92,8 @@ function publicLoja(db, brand) {
       code = newCode();
       if (!db.prepare('SELECT 1 FROM orders WHERE code = ?').get(code)) break;
     }
-    db.prepare(`INSERT INTO orders(code, name, phone, recipient, address, delivery_date, delivery_time, card_message, notes, items)
-      VALUES (?,?,?,?,?,?,?,?,?,?)`).run(code, name, phone, recipient, address, date, time, card, notes, JSON.stringify(items));
+    db.prepare(`INSERT INTO orders(code, name, phone, recipient, address, delivery_date, delivery_time, card_message, notes, items, details)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?)`).run(code, name, phone, recipient, address, date, time, card, notes, JSON.stringify(items), JSON.stringify(details));
     res.status(201).json({ code, items, total_cents: total, status: 'new' });
   }));
 
@@ -112,7 +114,7 @@ function adminLoja(r, db, brand, { uploadDir }) {
   const present = o => ({
     id: o.id, code: o.code, name: o.name, phone: o.phone, recipient: o.recipient, address: o.address,
     delivery_date: o.delivery_date, delivery_time: o.delivery_time, card_message: o.card_message,
-    notes: o.notes, items: JSON.parse(o.items), status: o.status, created_at: o.created_at,
+    notes: o.notes, items: JSON.parse(o.items), details: JSON.parse(o.details || '{}'), status: o.status, created_at: o.created_at,
   });
 
   r.get('/loja/summary', (req, res) => {

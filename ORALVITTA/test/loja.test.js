@@ -32,7 +32,8 @@ async function api(method, p, body, { admin = false } = {}) {
   return { status: res.status, json: await res.json().catch(() => ({})), res };
 }
 const order = (over = {}) => ({
-  name: 'Maria Souza', phone: '(85) 99999-1111', address: 'Rua das Flores, 10, Aldeota', consent: true,
+  name: 'Maria Souza', phone: '(85) 99999-1111', consent: true,
+  recipient: 'Ana Lima', address: 'Rua das Flores, 10, Aldeota, perto da padaria', occasion: 'Aniversário', from: 'Maria e família', payment: 'Pix',
   items: [{ id: 1, qty: 2 }], ...over,
 });
 
@@ -73,6 +74,11 @@ test('pedido: validações e criação', async () => {
   assert.equal((await api('POST', '/api/public/orders', order({ consent: false }))).status, 400);
   assert.equal((await api('POST', '/api/public/orders', order({ phone: '123' }))).status, 400);
   assert.equal((await api('POST', '/api/public/orders', order({ address: '' }))).status, 400);
+  for (const f of ['recipient', 'occasion', 'from', 'payment']) {
+    const r = await api('POST', '/api/public/orders', order({ [f]: '' }));
+    assert.equal(r.status, 400, f);
+  }
+  assert.equal((await api('POST', '/api/public/orders', order({ payment: 'Fiado' }))).status, 400); // fora das opções
   assert.equal((await api('POST', '/api/public/orders', order({ items: [] }))).status, 400);
   assert.equal((await api('POST', '/api/public/orders', order({ items: [{ id: 99999, qty: 1 }] }))).status, 400);
   assert.equal((await api('POST', '/api/public/orders', order({ items: [{ id: 1, qty: 0 }] }))).status, 400);
@@ -159,13 +165,35 @@ test('"ligamos para você": cria, não duplica e painel marca como ligado', asyn
 
 test('homenagem: agenda sem convênio e sem conflito; serviço pré-selecionável', async () => {
   const hom = (await api('GET', '/api/public/catalog')).json.categories.find(c => c.slug === 'homenagens').products.find(p => p.service_id);
-  const body = { service_id: hom.service_id, date: '2026-10-14', time: '10:00', name: 'Carlos', phone: '85977776666', consent: true, notes: 'Rua A, 100. Para Ana.' };
+  const body = { service_id: hom.service_id, date: '2026-10-14', time: '10:00', name: 'Carlos', phone: '85977776666', consent: true, notes: 'Entrar pelo portão lateral.',
+    recipient: 'Ana', address: 'Rua A, 100, Meireles, em frente ao banco', occasion: 'Pedido de namoro', from: 'Carlos', payment: 'Pix' };
   const a = await api('POST', '/api/public/appointments', body);
   assert.equal(a.status, 201);
   assert.equal(a.json.insurance, 'Particular');
+  assert.equal(a.json.details.occasion, 'Pedido de namoro');
+  assert.equal((await api('POST', '/api/public/appointments', { ...body, time: '11:00', phone: '85911110000', occasion: '' })).status, 400); // campo obrigatório
+  const look = await api('POST', '/api/public/lookup', { code: a.json.code, phone: '85977776666' });
+  assert.equal(look.json.details, undefined);   // endereço do homenageado não aparece na consulta pública
   assert.equal((await api('POST', '/api/public/appointments', { ...body, name: 'Outro', phone: '85966665555' })).status, 409);
   // domingo abre às 7h: 06:30 é recusado, 07:00 é aceito
   const sun = { ...body, date: '2026-10-18', phone: '85955554444' };
   assert.equal((await api('POST', '/api/public/appointments', { ...sun, time: '06:30' })).status, 409);
   assert.equal((await api('POST', '/api/public/appointments', { ...sun, time: '07:00' })).status, 201);
+});
+
+test('campos do formulário vêm do info e as formas de pagamento são editáveis no painel', async () => {
+  const info = (await api('GET', '/api/public/info')).json;
+  assert.deepEqual(info.purchase_fields.map(f => f.key), ['recipient', 'address', 'occasion', 'from', 'payment']);
+  assert.equal(info.purchase_fields[0].label, 'Pessoa homenageada');
+  assert.equal(info.purchase_fields.at(-1).type, 'select');
+  assert.ok(info.purchase_fields.at(-1).options.includes('Pix'));
+  const put = await api('PUT', '/api/admin/settings', { payment_methods: 'Pix\nDinheiro na entrega\n' }, { admin: true });
+  assert.equal(put.status, 200);
+  const after = (await api('GET', '/api/public/info')).json.purchase_fields.at(-1).options;
+  assert.deepEqual(after, ['Pix', 'Dinheiro na entrega']);
+  assert.equal((await api('POST', '/api/public/orders', order({ payment: 'Dinheiro na entrega' }))).status, 201);
+  assert.equal((await api('POST', '/api/public/orders', order({ payment: 'Cartão de crédito' }))).status, 400);
+  const mine = (await api('GET', '/api/admin/orders', null, { admin: true })).json.find(o => o.details.payment === 'Dinheiro na entrega');
+  assert.equal(mine.details.recipient, 'Ana Lima');
+  assert.equal(mine.details.from, 'Maria e família');
 });

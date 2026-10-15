@@ -114,6 +114,8 @@ function open(file, brand) {
       expires_at INTEGER NOT NULL
     );
   `);
+  addColumn(db, 'appointments', 'details', "TEXT NOT NULL DEFAULT '{}'");
+  addColumn(db, 'orders', 'details', "TEXT NOT NULL DEFAULT '{}'");
   seed(db, brand);
   seedCatalog(db, brand);
   return db;
@@ -129,6 +131,7 @@ function seed(db, brand) {
     clinic_address: c.address || '',
     clinic_whatsapp2: c.whatsapp2 || '',
     clinic_email: c.email || '',
+    payment_methods: (brand.paymentMethods || []).join('\n'),
     slot_step_min: '30',        // intervalo entre horários oferecidos
     min_advance_min: '120',     // antecedência mínima para agendar pelo site
     max_days_ahead: '60',       // até quantos dias à frente o site aceita agendamentos
@@ -151,6 +154,13 @@ function seed(db, brand) {
   if (nServices === 0) {
     const ins = db.prepare('INSERT INTO services(name, description, duration_min, sort) VALUES (?,?,?,?)');
     brand.services.forEach(([n, d, m], i) => ins.run(n, d, m, i));
+  }
+}
+
+// Migração leve: bancos criados antes de uma coluna existir ganham a coluna ao abrir.
+function addColumn(db, table, column, def) {
+  if (!db.prepare(`PRAGMA table_info(${table})`).all().some(c => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${def}`);
   }
 }
 
