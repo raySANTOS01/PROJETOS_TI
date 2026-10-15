@@ -56,6 +56,53 @@ function open(file, brand) {
     );
     CREATE INDEX IF NOT EXISTS idx_appt_date ON appointments(date, status);
     CREATE INDEX IF NOT EXISTS idx_appt_phone ON appointments(phone);
+    -- Vertical "loja": catálogo, pedidos por WhatsApp e contatos ("ligamos para você")
+    CREATE TABLE IF NOT EXISTS categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      description TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      active INTEGER NOT NULL DEFAULT 1,
+      sort INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id),
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      price_mode TEXT NOT NULL DEFAULT 'quote' CHECK (price_mode IN ('fixed','from','quote')),
+      price_cents INTEGER,
+      image TEXT NOT NULL DEFAULT '',
+      service_id INTEGER REFERENCES services(id),
+      featured INTEGER NOT NULL DEFAULT 0,
+      active INTEGER NOT NULL DEFAULT 1,
+      sort INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX IF NOT EXISTS idx_products_cat ON products(category_id, active);
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      recipient TEXT NOT NULL DEFAULT '',
+      address TEXT NOT NULL DEFAULT '',
+      delivery_date TEXT NOT NULL DEFAULT '',
+      delivery_time TEXT NOT NULL DEFAULT '',
+      card_message TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      items TEXT NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new','contacted','confirmed','delivered','cancelled')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status, created_at);
+    CREATE TABLE IF NOT EXISTS leads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL DEFAULT '',
+      phone TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new','called')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
     CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT NOT NULL UNIQUE,
@@ -68,6 +115,7 @@ function open(file, brand) {
     );
   `);
   seed(db, brand);
+  seedCatalog(db, brand);
   return db;
 }
 
@@ -79,6 +127,8 @@ function seed(db, brand) {
     clinic_whatsapp: c.whatsapp,
     clinic_instagram: c.instagram,
     clinic_address: c.address || '',
+    clinic_whatsapp2: c.whatsapp2 || '',
+    clinic_email: c.email || '',
     slot_step_min: '30',        // intervalo entre horários oferecidos
     min_advance_min: '120',     // antecedência mínima para agendar pelo site
     max_days_ahead: '60',       // até quantos dias à frente o site aceita agendamentos
@@ -102,6 +152,22 @@ function seed(db, brand) {
     const ins = db.prepare('INSERT INTO services(name, description, duration_min, sort) VALUES (?,?,?,?)');
     brand.services.forEach(([n, d, m], i) => ins.run(n, d, m, i));
   }
+}
+
+function seedCatalog(db, brand) {
+  if (!brand.catalog || db.prepare('SELECT COUNT(*) n FROM categories').get().n > 0) return;
+  const insCat = db.prepare('INSERT INTO categories(name, slug, description, image, sort) VALUES (?,?,?,?,?)');
+  const insProd = db.prepare(`INSERT INTO products(category_id, name, description, price_mode, price_cents, image, service_id, featured, sort)
+    VALUES (?,?,?,?,?,?,?,?,?)`);
+  const svc = db.prepare('SELECT id FROM services WHERE name = ?');
+  brand.catalog.forEach((c, i) => {
+    const cid = Number(insCat.run(c.name, c.slug, c.description || '', c.image || '', i).lastInsertRowid);
+    (c.products || []).forEach((p, j) => {
+      const service = p.service ? svc.get(p.service) : null;
+      insProd.run(cid, p.name, p.description || '', p.priceMode || 'quote',
+        p.price != null ? Math.round(p.price * 100) : null, p.image || '', service ? service.id : null, p.featured ? 1 : 0, j);
+    });
+  });
 }
 
 function getSettings(db) {

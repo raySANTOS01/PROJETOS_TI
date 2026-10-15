@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{FULL}} — Homenagens, flores e cestas em {{CITY}}</title>
+  <meta name="description" content="{{HERO_LEAD}}">
+  <link rel="icon" href="{{FAVICON}}" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{{FONTS_LINK}}" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/loja.css">
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body class="{{BODY_CLASS}} loja">
+{{>header}}
+  <main>
+    <section class="hero loja-hero">
+      <div class="wrap">
+        <span class="accent-eyebrow">{{HERO_EYEBROW}}</span>
+        <h1>{{HERO_TITLE}}</h1>
+        <p class="lead">{{HERO_LEAD}}</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="/catalogo">Ver catálogo</a>
+          <a class="btn btn-ghost" href="/agendar">Agendar {{APPT}}</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="categorias">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Catálogo</span>
+          <h2>O presente ideal para cada ocasião</h2>
+        </div>
+        <div class="cat-grid" id="cat-grid"></div>
+      </div>
+    </section>
+
+    <section class="block alt" id="destaques" hidden>
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Destaques</span>
+          <h2>Para surpreender agora</h2>
+        </div>
+        <div class="products" id="featured"></div>
+      </div>
+    </section>
+
+    <section class="block homenagem-band" id="homenagens">
+      <div class="wrap band-inner">
+        <div>
+          <span class="accent-eyebrow">Ao vivo, com data e hora marcadas</span>
+          <h2>Surpreenda com uma homenagem</h2>
+          <p>Loucura de amor, violino, sax, voz e violão, helicóptero e muito mais. Escolha o dia e o horário disponíveis e nós cuidamos do resto.</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary" href="/agendar">Agendar {{APPT}}</a>
+          <a class="btn btn-ghost" href="/catalogo?c=homenagens">Conhecer as opções</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Como pedir</span>
+          <h2>Simples, rápido e com carinho</h2>
+        </div>
+        <ol class="how">
+          <li><h3>Escolha no catálogo</h3><p class="muted">Adicione ao pedido flores, cestas, telemensagens e presentes.</p></li>
+          <li><h3>Diga para quem e quando</h3><p class="muted">Informe o endereço, a data e o recado do cartão.</p></li>
+          <li><h3>Confirme pelo WhatsApp</h3><p class="muted">Nossa equipe confirma os detalhes e os valores com você.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="block alt" id="sobre" hidden>
+      <div class="wrap about">
+        <div>
+          <span class="eyebrow">Sobre nós</span>
+          <h2 id="about-title"></h2>
+          <div id="about-text"></div>
+        </div>
+        <img id="about-img" alt="" hidden>
+      </div>
+    </section>
+
+    <section class="block" id="onde" hidden>
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Onde estamos</span>
+          <h2>Venha nos visitar</h2>
+        </div>
+        <div class="place">
+          <address id="address"></address>
+          <a class="btn btn-ghost" id="map-link" target="_blank" rel="noopener">Abrir no mapa</a>
+        </div>
+      </div>
+    </section>
+  </main>
+{{>footer}}
+  <script src="/js/common.js"></script>
+  <script src="/js/loja/common.js"></script>
+  <script src="/js/loja/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meu pedido — {{FULL}}</title>
+  <link rel="icon" href="{{FAVICON}}" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{{FONTS_LINK}}" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/loja.css">
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body class="{{BODY_CLASS}} loja">
+{{>header}}
+  <main class="wrap">
+    <div class="page-title">
+      <span class="eyebrow">Pedido</span>
+      <h1>Meu pedido</h1>
+    </div>
+    <div id="order-root"></div>
+  </main>
+{{>footer}}
+  <script src="/js/common.js"></script>
+  <script src="/js/loja/common.js"></script>
+  <script src="/js/loja/pedido.js"></script>
+</body>
+</html>

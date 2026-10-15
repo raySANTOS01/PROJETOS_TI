@@ -3,6 +3,9 @@
   const $ = id => document.getElementById(id);
   const content = $('content');
   const modal = $('modal');
+  let V = { appt: 'consulta', appts: 'consultas' };
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  let ME = { vertical: 'clinica', ask_insurance: true };
   const ctx = { hours: null, services: null, insurances: null, clinic: null, today: null };
 
   // ---------- utilidades de interface ----------
@@ -16,7 +19,7 @@
   const toMin = t => { const [a, b] = t.split(':').map(Number); return a * 60 + b; };
   const wd = date => new Date(date + 'T12:00:00Z').getUTCDay();
   const patientMsg = (a, text) => whatsappUrl('55' + a.phone, text);
-  const confirmMsg = a => patientMsg(a, `Olá, ${a.name.split(' ')[0]}! Aqui é da ${ctx.clinic?.clinic_name || 'nossa clínica'}. Sua consulta de ${a.service} está marcada para ${fmtNumeric(a.date)} às ${a.time}. Pode confirmar sua presença?`);
+  const confirmMsg = a => patientMsg(a, `Olá, ${a.name.split(' ')[0]}! Aqui é da ${ctx.clinic?.clinic_name || 'nossa clínica'}. Sua ${V.appt} de ${a.service} está marcada para ${fmtNumeric(a.date)} às ${a.time}. Pode confirmar sua presença?`);
 
   function openModal(...nodes) {
     clear(modal);
@@ -40,9 +43,10 @@
   // ---------- login ----------
   async function boot() {
     try {
-      await api('/api/admin/me');
+      ME = await api('/api/admin/me'); V = ME.vocab || V;
       $('login-screen').hidden = true; $('app').hidden = false;
       await loadCtx(true);
+      buildNav();
       route();
     } catch (e) {
       $('app').hidden = true; $('login-screen').hidden = false; modal.open && modal.close();
@@ -60,6 +64,16 @@
 
   // ---------- roteamento ----------
   const views = { visao, agenda, disponibilidade, servicos, config };
+  const EXT = {};   // extensões por vertical (ex.: admin-loja.js): { views, nav }
+  const NAV_CLINICA = () => [['visao', 'Visão geral'], ['agenda', 'Agenda'], ['disponibilidade', 'Disponibilidade'], ['servicos', 'Serviços'], ['config', 'Configurações']];
+  const baseViews = { ...views };
+  function buildNav() {
+    const ext = EXT[ME.vertical];
+    for (const k of Object.keys(views)) delete views[k];
+    Object.assign(views, baseViews, ext ? ext.views : {});
+    const nav = $('side-nav'); clear(nav);
+    for (const [id, label] of (ext ? ext.nav() : NAV_CLINICA())) nav.append(h('a', { href: '#' + id, 'data-view': id }, label));
+  }
   function route() {
     const name = (location.hash || '#visao').slice(1);
     const view = views[name] ? name : 'visao';
@@ -79,15 +93,15 @@
     const stat = (n, t) => h('div', { class: 'stat' }, h('b', {}, String(n)), h('span', {}, t));
     content.append(
       h('h1', {}, 'Visão geral'), h('p', { class: 'sub' }, fmtLong(d.today)),
-      h('div', { class: 'stats' }, stat(d.count_today, 'consultas hoje'), stat(d.count_week, 'consultas nos próximos 7 dias'), stat(d.to_confirm, 'aguardando confirmação')),
-      h('div', { class: 'card' }, h('h2', {}, 'Próximas consultas'),
+      h('div', { class: 'stats' }, stat(d.count_today, `${V.appts} hoje`), stat(d.count_week, `${V.appts} nos próximos 7 dias`), stat(d.to_confirm, 'aguardando confirmação')),
+      h('div', { class: 'card' }, h('h2', {}, `Próximas ${V.appts}`),
         d.upcoming.length ? h('ul', { class: 'list' }, d.upcoming.map(a => h('li', {},
           h('span', { class: 'when' }, a.date === d.today ? `Hoje ${a.time}` : `${fmtShort(a.date)} ${a.time}`),
           h('span', { class: 'who' }, a.name, h('small', {}, `${a.service} · ${fmtPhone(a.phone)} · ${a.insurance}`)),
           h('span', { class: 'acts' },
             h('span', { class: `badge ${a.status}` }, STATUS[a.status]),
             h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: () => { agendaDate = a.date; location.hash = '#agenda'; } }, 'Ver na agenda'))
-        ))) : h('p', { class: 'empty-note' }, 'Nenhuma consulta marcada para os próximos dias.')));
+        ))) : h('p', { class: 'empty-note' }, `Nenhuma ${V.appt} marcada para os próximos dias.`)));
   }
 
   // =====================================================================
@@ -117,13 +131,13 @@
       const n = appointments.filter(a => a.date === d && ['scheduled', 'confirmed'].includes(a.status)).length;
       const closed = !ctx.hours[wd(d)].open;
       return h('button', { type: 'button', class: `${d === date ? 'sel' : ''} ${closed ? 'closed' : ''}`, onclick: () => go(d), 'aria-label': fmtLong(d) },
-        h('small', {}, WEEKDAYS[wd(d)].slice(0, 3)), h('b', {}, String(Number(d.slice(8)))), h('i', {}, n ? `${n} consulta${n > 1 ? 's' : ''}` : closed ? 'fechado' : ''));
+        h('small', {}, WEEKDAYS[wd(d)].slice(0, 3)), h('b', {}, String(Number(d.slice(8)))), h('i', {}, n ? `${n} ${n > 1 ? V.appts : V.appt}` : closed ? 'fechado' : ''));
     }));
 
     content.append(
       h('div', { class: 'head-row' },
         h('div', {}, h('h1', {}, 'Agenda'), h('p', { class: 'sub' }, fmtLong(date))),
-        h('button', { class: 'btn btn-primary', type: 'button', onclick: () => newAppointment(date) }, '+ Nova consulta')),
+        h('button', { class: 'btn btn-primary', type: 'button', onclick: () => newAppointment(date) }, `+ Nova ${V.appt}`)),
       h('div', { class: 'daybar' },
         h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Dia anterior', onclick: () => go(addDays(date, -1)) }, '‹'),
         dateInput,
@@ -160,7 +174,7 @@
       const step = Number(ctx.clinic.slot_step_min) || 30;
       for (let t = toMin(hrs.start); t < toMin(hrs.end); t += step) {
         const hhmm = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
-        const b = h('button', { type: 'button', class: 'tl-click', 'aria-label': `Nova consulta às ${hhmm}`, onclick: () => newAppointment(date, hhmm) });
+        const b = h('button', { type: 'button', class: 'tl-click', 'aria-label': `Nova ${V.appt} às ${hhmm}`, onclick: () => newAppointment(date, hhmm) });
         box.append(place(b, t, t + step));
       }
     }
@@ -189,14 +203,14 @@
     };
     const btn = (label, cls, fn) => h('button', { type: 'button', class: `btn btn-sm ${cls}`, onclick: fn }, label);
     const actions = h('div', { class: 'modal-actions' });
-    if (a.status === 'scheduled') actions.append(btn('Confirmar', 'btn-primary', () => act({ status: 'confirmed' }, 'Consulta confirmada')));
+    if (a.status === 'scheduled') actions.append(btn('Confirmar', 'btn-primary', () => act({ status: 'confirmed' }, `${cap(V.appt)} confirmada`)));
     if (a.status === 'confirmed') actions.append(
-      btn('Marcar como concluída', 'btn-primary', () => act({ status: 'completed' }, 'Consulta concluída')),
+      btn('Marcar como concluída', 'btn-primary', () => act({ status: 'completed' }, `${cap(V.appt)} concluída`)),
       btn('Não compareceu', 'btn-ghost', () => act({ status: 'no_show' }, 'Registrado: não compareceu')));
-    if (['completed', 'no_show', 'cancelled'].includes(a.status)) actions.append(btn(a.status === 'cancelled' ? 'Reativar' : 'Reabrir', 'btn-ghost', () => act({ status: 'confirmed' }, 'Consulta reativada')));
+    if (['completed', 'no_show', 'cancelled'].includes(a.status)) actions.append(btn(a.status === 'cancelled' ? 'Reativar' : 'Reabrir', 'btn-ghost', () => act({ status: 'confirmed' }, `${cap(V.appt)} reativada`)));
     if (['scheduled', 'confirmed'].includes(a.status)) {
       actions.append(btn('Remarcar', 'btn-ghost', () => rescheduleModal(a)),
-        btn('Cancelar consulta', 'btn-danger', () => { if (confirm(`Cancelar a consulta de ${a.name}?`)) act({ status: 'cancelled' }, 'Consulta cancelada'); }));
+        btn(`Cancelar ${V.appt}`, 'btn-danger', () => { if (confirm(`Cancelar a ${V.appt} de ${a.name}?`)) act({ status: 'cancelled' }, `${cap(V.appt)} cancelada`); }));
     }
     actions.append(h('a', { class: 'btn btn-sm btn-ghost', href: confirmMsg(a), target: '_blank', rel: 'noopener' }, 'WhatsApp do paciente'));
 
@@ -209,7 +223,7 @@
         h('div', {}, h('dt', {}, 'Horário'), h('dd', {}, `${a.time} – ${a.end_time}`)),
         h('div', {}, h('dt', {}, 'Telefone'), h('dd', {}, fmtPhone(a.phone))),
         a.email && h('div', {}, h('dt', {}, 'E-mail'), h('dd', {}, a.email)),
-        h('div', {}, h('dt', {}, 'Convênio'), h('dd', {}, a.insurance)),
+        ME.ask_insurance && h('div', {}, h('dt', {}, 'Convênio'), h('dd', {}, a.insurance)),
         a.notes && h('div', {}, h('dt', {}, 'Observações'), h('dd', {}, a.notes)),
         h('div', {}, h('dt', {}, 'Código'), h('dd', {}, `${a.code} · ${a.source === 'admin' ? 'marcada no painel' : 'marcada pelo site'}`))),
       actions);
@@ -258,10 +272,10 @@
     save.addEventListener('click', async () => {
       try {
         await api(`/api/admin/appointments/${a.id}`, { method: 'PATCH', body: { date: date.value, time: chosen } });
-        modal.close(); toast('Consulta remarcada'); route();
+        modal.close(); toast(`${cap(V.appt)} remarcada`); route();
       } catch (e) { showErr(err, e); picker.load(date.value, a.service_id); }
     });
-    openModal(h('h2', {}, 'Remarcar consulta'), h('p', { class: 'muted' }, `${a.name} · ${a.service} (${svc ? dur(svc.duration_min) : ''})`),
+    openModal(h('h2', {}, `Remarcar ${V.appt}`), h('p', { class: 'muted' }, `${a.name} · ${a.service} (${svc ? dur(svc.duration_min) : ''})`),
       err, field('Nova data', date), picker.el, h('div', { class: 'modal-actions' }, save));
     picker.load(date.value, a.service_id);
   }
@@ -285,16 +299,16 @@
     const form = h('form', { novalidate: true }, err,
       field('Serviço', svc), field('Data', dt), picker.el,
       h('div', { class: 'form-row' }, field('Nome do paciente', name), field('Telefone', phone)),
-      h('div', { class: 'form-row' }, field('E-mail', email, '(opcional)'), field('Convênio', ins)),
+      h('div', { class: 'form-row' }, field('E-mail', email, '(opcional)'), ME.ask_insurance ? field('Convênio', ins) : null),
       field('Observações', notes, '(opcional)'), h('div', { class: 'modal-actions' }, save));
     form.addEventListener('submit', async ev => {
       ev.preventDefault(); err.hidden = true;
       try {
         await api('/api/admin/appointments', { method: 'POST', body: { service_id: svc.value, date: dt.value, time: chosen, name: name.value, phone: phone.value, email: email.value, insurance: ins.value, notes: notes.value } });
-        modal.close(); toast('Consulta agendada'); agendaDate = dt.value; location.hash === '#agenda' ? route() : (location.hash = '#agenda');
+        modal.close(); toast(`${cap(V.appt)} agendada`); agendaDate = dt.value; location.hash === '#agenda' ? route() : (location.hash = '#agenda');
       } catch (e) { showErr(err, e); reload(chosen); }
     });
-    openModal(h('h2', {}, 'Nova consulta'), form);
+    openModal(h('h2', {}, `Nova ${V.appt}`), form);
     reload(time);
   }
 
@@ -326,11 +340,11 @@
         const r = await api('/api/admin/blocks', { method: 'POST', body: { date: date.value, end_date: until.value || undefined, full_day: full.checked, start: start.value, end: end.value, reason: reason.value } });
         toast(r.created ? 'Indisponibilidade registrada' : 'Nenhum dia útil no período — nada a bloquear');
         if (r.affected.length) {
-          result.append(h('div', { class: 'alert warn' }, h('b', {}, `Atenção: ${r.affected.length} consulta(s) já marcada(s) nesse período.`), ' Avise os pacientes e cancele ou remarque:'),
+          result.append(h('div', { class: 'alert warn' }, h('b', {}, `Atenção: ${r.affected.length} ${V.appt}(s) já marcada(s) nesse período.`), ' Avise os clientes e cancele ou remarque:'),
             h('ul', { class: 'list' }, r.affected.map(a => h('li', {},
               h('span', { class: 'when' }, `${fmtShort(a.date)} ${a.time}`), h('span', { class: 'who' }, a.name, h('small', {}, `${a.service} · ${fmtPhone(a.phone)}`)),
               h('span', { class: 'acts' },
-                h('a', { class: 'btn btn-ghost btn-sm', target: '_blank', rel: 'noopener', href: patientMsg(a, `Olá, ${a.name.split(' ')[0]}! Precisamos remarcar sua consulta de ${fmtNumeric(a.date)} às ${a.time} na ${ctx.clinic.clinic_name}. Podemos combinar um novo horário?`) }, 'Avisar'),
+                h('a', { class: 'btn btn-ghost btn-sm', target: '_blank', rel: 'noopener', href: patientMsg(a, `Olá, ${a.name.split(' ')[0]}! Precisamos remarcar sua ${V.appt} de ${fmtNumeric(a.date)} às ${a.time} na ${ctx.clinic.clinic_name}. Podemos combinar um novo horário?`) }, 'Avisar'),
                 h('button', { class: 'btn btn-danger btn-sm', type: 'button', onclick: async e => { e.target.disabled = true; try { await api(`/api/admin/appointments/${a.id}`, { method: 'PATCH', body: { status: 'cancelled' } }); e.target.textContent = 'Cancelada'; } catch (x) { e.target.disabled = false; fail(x); } } }, 'Cancelar'))))));
           result.scrollIntoView({ block: 'nearest' });
         } else { setTimeout(route, 600); }
@@ -400,8 +414,8 @@
       h('label', { class: 'toggle' }, active, 'Visível no site e disponível para agendar'),
       h('div', { class: 'modal-actions' }, h('button', { type: 'submit', class: 'btn btn-primary' }, 'Salvar'),
         s && h('button', { type: 'button', class: 'btn btn-danger', onclick: async () => {
-          if (!confirm(`Excluir "${s.name}"? Se já houver consultas com ele, será apenas ocultado.`)) return;
-          try { const r = await api(`/api/admin/services/${s.id}`, { method: 'DELETE' }); modal.close(); toast(r.deactivated ? 'Serviço ocultado (há consultas vinculadas)' : 'Serviço excluído'); route(); } catch (e) { showErr(err, e); }
+          if (!confirm(`Excluir "${s.name}"? Se já houver ${V.appts} com ele, será apenas ocultado.`)) return;
+          try { const r = await api(`/api/admin/services/${s.id}`, { method: 'DELETE' }); modal.close(); toast(r.deactivated ? `Serviço ocultado (há ${V.appts} vinculadas)` : 'Serviço excluído'); route(); } catch (e) { showErr(err, e); }
         } }, 'Excluir')));
     form.addEventListener('submit', async ev => {
       ev.preventDefault(); err.hidden = true;
@@ -458,5 +472,11 @@
       h('div', { class: 'grid-2' }, h('div', { class: 'card' }, h('h2', {}, 'Clínica e agendamento'), form), h('div', { class: 'card' }, h('h2', {}, 'Segurança'), pform)));
   }
 
-  boot();
+  window.AdminKit = {
+    h, api, clear, ctx, content, modal, toast, openModal, loadCtx, field, errBox, showErr, fail, route, fmtLong, fmtShort, fmtNumeric, fmtPhone,
+    addDays, dur, STATUS, WEEKDAYS, patientMsg, whatsappUrl, maskPhone, vocab: () => V, cap, me: () => ME,
+    extend: (vertical, ext) => { EXT[vertical] = ext; },
+    setAgendaDate: d => { agendaDate = d; },
+  };
+  document.addEventListener('DOMContentLoaded', boot);
 })();

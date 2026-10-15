@@ -7,7 +7,7 @@ Comece um projeto novo com: `npm run novo -- <id> "Nome do Negócio" "Cidade"` (
 | Campo | O que é |
 |---|---|
 | `id`, `name`, `subtitle`, `fullName`, `city` | Identidade. `subtitle` aparece pequeno sob o nome no cabeçalho (só com logo `mark`). |
-| `vertical` | Tipo de negócio/sistema por trás: `clinica` (agendamento). Outros tipos entram como módulos (veja `docs/MODELO.md`). |
+| `vertical` | Tipo de negócio/sistema por trás: `clinica` (agendamento) ou `loja` (catálogo + pedidos + homenagens). Outros tipos entram como módulos (veja `docs/MODELO.md`). |
 | `logo.style` | `mark` = ícone quadrado + nome em texto; `wide` = logo horizontal inteira (sem texto ao lado). |
 | `logo.file`, `logo.favicon` | Arquivos em `img/`. |
 | `design.fonts` | `[família do Google Fonts, pesos]` para títulos (`display`) e texto (`body`). |
@@ -25,3 +25,8 @@ Comece um projeto novo com: `npm run novo -- <id> "Nome do Negócio" "Cidade"` (
 | `services` | `[nome, descrição, duração em minutos]` — valem só na criação do banco. |
 
 Imagens: PNG/JPG em `img/`, de preferência já redimensionadas (hero ≤ 2000px, galeria ≤ 1200px).
+
+| `vocab`, `askInsurance` | Palavras do negócio (consulta → homenagem…) e se pergunta convênio. |
+| `logo.style: "text"` | Logo desenhada em texto/coração (sem arquivo de logo). `design.fonts.accent` = fonte cursiva. |
+| `catalog` | (vertical `loja`) categorias e produtos iniciais; `service` liga o produto a um serviço agendável. |
+| `clinic.whatsapp2`, `clinic.facebook`, `clinic.email` | Contatos extras. |

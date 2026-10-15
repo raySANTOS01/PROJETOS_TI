@@ -8,7 +8,7 @@ const adminRoutes = require('./src/routes-admin');
 const { HttpError } = require('./src/util');
 const { loadBrand, tokens, themeCss } = require('./src/brand');
 
-function createApp(db, brand = loadBrand()) {
+function createApp(db, brand = loadBrand(), { uploadDir = path.join(__dirname, 'data', `${brand.id}-uploads`) } = {}) {
   const app = express();
   app.disable('x-powered-by');
   if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : process.env.TRUST_PROXY);
@@ -21,28 +21,35 @@ function createApp(db, brand = loadBrand()) {
       "default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; frame-ancestors 'none'");
     next();
   });
-  app.use(express.json({ limit: '20kb' }));
+  // o envio de fotos (/api/admin/upload) faz seu próprio parse, com limite maior e só depois do login
+  app.use((req, res, next) => req.path === '/api/admin/upload' ? next() : express.json({ limit: '20kb' })(req, res, next));
 
   app.use('/api', (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
   app.use('/api/public', publicRoutes(db, brand));
-  app.use('/api/admin', adminRoutes(db, brand));
+  app.use('/api/admin', adminRoutes(db, brand, { uploadDir }));
   app.use('/api', (req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
 
-  // Páginas em views/ têm marcadores {{...}} trocados pelos dados da marca (nome, logo, cores).
+  // Páginas em views/ (ou views/<vertical>/, que tem prioridade) têm marcadores {{...}} trocados
+  // pelos dados da marca e trechos {{>nome}} trocados por views/<vertical>/partials/nome.html.
   const tk = tokens(brand);
   const views = path.join(__dirname, 'views');
+  const find = rel => [path.join(views, brand.vertical, rel), path.join(views, rel)].find(f => fs.existsSync(f));
+  const render = html => html
+    .replace(/\{\{>(\w+)\}\}/g, (_, n) => render(fs.readFileSync(find(`partials/${n}.html`), 'utf8')))
+    .replace(/\{\{(\w+)\}\}/g, (_, k) => tk[k] ?? '');
   const cache = {};
-  const page = name => (req, res) => {
-    cache[name] ??= fs.readFileSync(path.join(views, name), 'utf8').replace(/\{\{(\w+)\}\}/g, (_, k) => tk[k] ?? '');
+  const page = name => (req, res, next) => {
+    const file = find(name);
+    if (!file) return next();
+    cache[name] ??= render(fs.readFileSync(file, 'utf8'));
     res.type('html').send(cache[name]);
   };
-  app.get('/', page('index.html'));
-  app.get('/agendar', page('agendar.html'));
-  app.get('/consulta', page('consulta.html'));
-  app.get('/admin', page('admin.html'));
+  for (const [route, file] of [['/', 'index.html'], ['/agendar', 'agendar.html'], ['/consulta', 'consulta.html'],
+    ['/admin', 'admin.html'], ['/catalogo', 'catalogo.html'], ['/pedido', 'pedido.html']]) app.get(route, page(file));
   const theme = themeCss(brand);
   app.get('/theme.css', (req, res) => res.type('css').send(theme));
   app.use('/img', express.static(brand.imgDir));
+  app.use('/uploads', express.static(uploadDir, { index: false, dotfiles: 'deny' }));
   app.use(express.static(path.join(__dirname, 'public')));
 
   app.use((err, req, res, next) => {

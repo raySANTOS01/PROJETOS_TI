@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minha {{APPT}} — {{FULL}}</title>
+  <link rel="icon" href="{{FAVICON}}" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{{FONTS_LINK}}" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/loja.css">
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body class="{{BODY_CLASS}} loja">
+{{>header}}
+  <main class="wrap">
+    <div class="page-title">
+      <span class="eyebrow">Acompanhamento</span>
+      <h1>Minha {{APPT}}</h1>
+      <p class="muted">Informe o código recebido no agendamento e o telefone usado na reserva.</p>
+    </div>
+    <div class="lookup">
+      <form class="panel" id="lookup-form" novalidate>
+        <div class="alert error" id="lookup-error" hidden></div>
+        <label class="field"><span>Código da {{APPT}}</span>
+          <input type="text" id="code" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="Ex.: K7M2QX" required></label>
+        <label class="field"><span>Telefone</span>
+          <input type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="(85) 90000-0000" required></label>
+        <button class="btn btn-primary" type="submit" id="lookup-btn">Consultar</button>
+      </form>
+      <div class="panel" id="result" hidden></div>
+    </div>
+  </main>
+{{>footer}}
+  <script src="/js/common.js"></script>
+  <script src="/js/loja/common.js"></script>
+  <script src="/js/consulta.js"></script>
+</body>
+</html>

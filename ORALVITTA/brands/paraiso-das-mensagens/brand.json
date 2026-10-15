@@ -1,0 +1,289 @@
+{
+  "id": "paraiso-das-mensagens",
+  "name": "Paraíso das Mensagens",
+  "subtitle": "Fortaleza",
+  "fullName": "Paraíso das Mensagens",
+  "city": "Fortaleza",
+  "vertical": "loja",
+  "logo": {
+    "style": "text",
+    "file": "",
+    "favicon": "favicon.png"
+  },
+  "design": {
+    "fonts": {
+      "display": [
+        "Playfair Display",
+        "500;600;700"
+      ],
+      "body": [
+        "Raleway",
+        "300;400;500;600;700"
+      ],
+      "accent": [
+        "Great Vibes",
+        "400"
+      ]
+    },
+    "tone": "light",
+    "hero": "centered",
+    "radius": 14,
+    "buttons": "pill"
+  },
+  "colors": {
+    "teal-300": "#f2a7b1",
+    "teal-400": "#e5566b",
+    "teal-500": "#d82f47",
+    "teal-600": "#c4152d",
+    "teal-700": "#b00f26",
+    "navy-800": "#5b1423",
+    "navy-900": "#3d0c17",
+    "ink": "#3b2528",
+    "ink-soft": "#7a5b60",
+    "mist-50": "#fffaf6",
+    "mist-100": "#fdeef0",
+    "mist-200": "#f6d9dc",
+    "line": "#efd9d3",
+    "gold": "#c9922c",
+    "band": "#5b1423",
+    "on-band": "#ffffff",
+    "btn-hover": "#8f0b1e"
+  },
+  "vocab": {
+    "appt": "homenagem",
+    "appts": "homenagens"
+  },
+  "askInsurance": false,
+  "copy": {
+    "eyebrow": "Desde 2001 em Fortaleza",
+    "heroTitle": "Emoções entregues em Fortaleza.",
+    "heroLead": "Flores, cestas de café da manhã, homenagens ao vivo, telemensagens e presentes para celebrar quem você ama, com entrega em Fortaleza e região metropolitana.",
+    "bookingNotesLabel": "Endereço, quem vai receber e recado",
+    "bookingNotesHint": "Informe o endereço da homenagem, o nome de quem vai receber e a mensagem que deseja transmitir."
+  },
+  "about": {
+    "title": "Estamos no mercado de homenagens desde 2001",
+    "text": [
+      "A Paraíso das Mensagens iniciou suas atividades oferecendo um serviço diferenciado e criativo, que logo conquistou os clientes mais exigentes.",
+      "Com atuação em toda a Fortaleza e região metropolitana, já entregou milhares de mensagens capazes de emocionar a todos, além de serviços como as tradicionais Loucuras de Amor.",
+      "Uma equipe sempre criativa, atenta e moderna trabalha para garantir a quem você ama a melhor homenagem em todas as ocasiões."
+    ]
+  },
+  "gallery": [],
+  "clinic": {
+    "phone": "(85) 3232-1204",
+    "whatsapp": "5585994339478",
+    "whatsapp2": "5585999860751",
+    "instagram": "paraisodasmensagensoficial",
+    "facebook": "paraisodasmensagensoficial",
+    "address": "Rua Vital Brasil, 391 - Bom Sucesso, Fortaleza - CE, 60541-495"
+  },
+  "showInsurances": false,
+  "insurances": [
+    "Particular"
+  ],
+  "hours": {
+    "weekdays": [
+      "06:00",
+      "22:00"
+    ],
+    "saturday": [
+      "06:00",
+      "22:00"
+    ],
+    "sunday": [
+      "07:00",
+      "22:00"
+    ]
+  },
+  "services": [
+    [
+      "Loucura de Amor",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Homenagem com Helicóptero",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Violino",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Sax",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Voz e Violão",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Arquivo Confidencial",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Pegadinha",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Filmagem",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ],
+    [
+      "Telegrama Animado",
+      "Homenagem ao vivo com data e horário marcados.",
+      60
+    ]
+  ],
+  "catalog": [
+    {
+      "name": "Floricultura",
+      "slug": "floricultura",
+      "description": "Rosas, buquês e arranjos para cada ocasião.",
+      "products": [
+        {
+          "name": "Rosas",
+          "featured": true
+        },
+        {
+          "name": "Flores",
+          "featured": true
+        },
+        {
+          "name": "Ramalhetes"
+        },
+        {
+          "name": "Buquê de Noiva"
+        },
+        {
+          "name": "Coroa Fúnebre"
+        }
+      ]
+    },
+    {
+      "name": "Cestas e Baús",
+      "slug": "cestas-e-baus",
+      "description": "Cestas de café da manhã, baús, bandejas e cestas de chocolate.",
+      "products": [
+        {
+          "name": "Bandeja e Baú de Café",
+          "featured": true
+        },
+        {
+          "name": "Cesta de Café",
+          "featured": true
+        },
+        {
+          "name": "Baús de Drinks"
+        },
+        {
+          "name": "Cesta de Aperitivos"
+        },
+        {
+          "name": "Cestas e Baú de Chocolate"
+        },
+        {
+          "name": "Cesta Tropical"
+        }
+      ]
+    },
+    {
+      "name": "Homenagens",
+      "slug": "homenagens",
+      "description": "Surpresas ao vivo para aniversários, pedidos de namoro e datas especiais.",
+      "products": [
+        {
+          "name": "Loucura de Amor",
+          "service": "Loucura de Amor",
+          "featured": true
+        },
+        {
+          "name": "Homenagem com Helicóptero",
+          "service": "Homenagem com Helicóptero",
+          "featured": false
+        },
+        {
+          "name": "Violino",
+          "service": "Violino",
+          "featured": true
+        },
+        {
+          "name": "Sax",
+          "service": "Sax",
+          "featured": false
+        },
+        {
+          "name": "Voz e Violão",
+          "service": "Voz e Violão",
+          "featured": false
+        },
+        {
+          "name": "Arquivo Confidencial",
+          "service": "Arquivo Confidencial",
+          "featured": false
+        },
+        {
+          "name": "Pegadinha",
+          "service": "Pegadinha",
+          "featured": false
+        },
+        {
+          "name": "Filmagem",
+          "service": "Filmagem",
+          "featured": false
+        },
+        {
+          "name": "Telegrama Animado",
+          "service": "Telegrama Animado",
+          "featured": false
+        },
+        {
+          "name": "Kits Personalizados"
+        }
+      ]
+    },
+    {
+      "name": "Telemensagem",
+      "slug": "telemensagem",
+      "description": "Mensagens para chegar até quem você ama, onde estiver.",
+      "products": [
+        {
+          "name": "CDs e DVDs Personalizados"
+        },
+        {
+          "name": "Kit Telemensagens"
+        },
+        {
+          "name": "Mensagens Fonadas (nacional e internacional)"
+        },
+        {
+          "name": "Serenata Digital"
+        },
+        {
+          "name": "Linha Cruzada"
+        }
+      ]
+    },
+    {
+      "name": "Presentes e Pelúcias",
+      "slug": "presentes",
+      "description": "Presentes e pelúcias para completar a surpresa.",
+      "products": [
+        {
+          "name": "Presentes"
+        },
+        {
+          "name": "Pelúcias"
+        }
+      ]
+    }
+  ]
+}

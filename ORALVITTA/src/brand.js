@@ -38,29 +38,36 @@ function loadBrand(id = process.env.BRAND || defaultId()) {
   brand.copy = { ...DEFAULT_COPY, ...brand.copy };
   brand.design = { ...DEFAULT_DESIGN, ...brand.design, fonts: { ...DEFAULT_DESIGN.fonts, ...(brand.design || {}).fonts } };
   brand.gallery ??= [];
+  brand.vocab = { appt: 'consulta', appts: 'consultas', ...brand.vocab };
   const hasImg = f => fs.existsSync(path.join(brand.imgDir, f));
   if (brand.design.hero === 'image' && !hasImg('hero.jpg')) {
     throw new Error(`${id}: design.hero = "image" exige o arquivo brands/${id}/img/hero.jpg`);
   }
-  for (const f of [brand.logo.file, brand.logo.favicon, ...brand.gallery, ...(brand.about?.image ? [brand.about.image] : [])]) {
+  for (const f of [...(brand.logo.style === 'text' ? [] : [brand.logo.file]), brand.logo.favicon, ...brand.gallery, ...(brand.about?.image ? [brand.about.image] : [])]) {
     if (!hasImg(f)) throw new Error(`${id}: imagem não encontrada: brands/${id}/img/${f}`);
   }
   return brand;
 }
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const fill = (t, brand) => t.replace('{city}', brand.city);
 
 function fontsLink(brand) {
-  const q = Object.values(brand.design.fonts)
+  const q = Object.values(brand.design.fonts).filter(Boolean)
     .map(([family, weights]) => `family=${family.replace(/ /g, '+')}:wght@${weights}`).join('&');
   return `https://fonts.googleapis.com/css2?${q}&display=swap`;
 }
 
 // Trechos de HTML que substituem os marcadores {{...}} nas páginas.
+const HEART = '<svg class="heart" viewBox="0 0 32 29" aria-hidden="true"><path d="M16 28C6 20 1 14.700 1 8.800 1 4.600 4.200 1.500 8.200 1.500c3 0 5.600 1.700 7.800 4.800 2.200-3.100 4.800-4.800 7.800-4.800 4 0 7.200 3.100 7.200 7.300C31 14.700 26 20 16 28z" fill="currentColor"/></svg>';
+
 function tokens(brand) {
   const mark = brand.logo.style === 'mark';
-  const img = `<img src="/img/${esc(brand.logo.file)}" alt="${mark ? '' : esc(brand.name)}">`;
+  const text = brand.logo.style === 'text';
+  const img = text
+    ? `<span class="brand-text">${HEART}<span class="script">${esc(brand.name.split(' ')[0])}</span><span class="rest">${esc(brand.name.split(' ').slice(1).join(' '))}</span></span>`
+    : `<img src="/img/${esc(brand.logo.file)}" alt="${mark ? '' : esc(brand.name)}">`;
   const word = small => mark
     ? `<span class="word">${esc(brand.name)}${small ? `<small>${esc(small)}</small>` : ''}</span>` : '';
   const c = brand.copy;
@@ -73,13 +80,21 @@ function tokens(brand) {
     BODY_CLASS: `hero-${brand.design.hero} tone-${brand.design.tone}`,
     BRAND: img + word(brand.subtitle),
     BRAND_PANEL: img + word('Painel') + (mark ? '' : '<span class="panel-tag">Painel</span>'),
-    BRAND_CLASS: mark ? 'brand' : 'brand brand-wide',
+    BRAND_CLASS: mark ? 'brand' : text ? 'brand brand-text-wrap' : 'brand brand-wide',
     HERO_EYEBROW: esc(fill(c.eyebrow, brand)),
     HERO_TITLE: esc(c.heroTitle),
     HERO_LEAD: esc(c.heroLead),
     SERVICES_EYEBROW: esc(c.servicesEyebrow),
     SERVICES_TITLE: esc(c.servicesTitle),
     SERVICES_LEAD: esc(c.servicesLead),
+    APPT: esc(brand.vocab.appt),
+    APPTS: esc(brand.vocab.appts),
+    APPT_CAP: esc(cap(brand.vocab.appt)),
+    APPTS_CAP: esc(cap(brand.vocab.appts)),
+    WHATSAPP: esc(brand.clinic.whatsapp),
+    PHONE: esc(brand.clinic.phone),
+    INSTAGRAM: esc(brand.clinic.instagram || ''),
+    FACEBOOK: esc(brand.clinic.facebook || ''),
   };
 }
 
@@ -88,6 +103,7 @@ function themeCss(brand) {
   const vars = Object.entries(brand.colors).map(([k, v]) => `  --${k}: ${v};`);
   vars.push(`  --font-display: '${d.fonts.display[0]}', Georgia, serif;`);
   vars.push(`  --font-body: '${d.fonts.body[0]}', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;`);
+  if (d.fonts.accent) vars.push(`  --font-accent: '${d.fonts.accent[0]}', cursive;`);
   vars.push(`  --radius: ${Number(d.radius)}px;`);
   vars.push(`  --btn-radius: ${d.buttons === 'pill' ? '999px' : d.buttons === 'square' ? '2px' : '8px'};`);
   if (d.hero === 'image') vars.push("  --hero-img: url('/img/hero.jpg');");

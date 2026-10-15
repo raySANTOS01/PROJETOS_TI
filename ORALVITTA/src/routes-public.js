@@ -20,9 +20,13 @@ module.exports = function publicRoutes(db, brand) {
   r.get('/info', (req, res) => {
     const st = getSettings(db);
     res.json({
+      vertical: brand.vertical,
+      vocab: brand.vocab,
+      ask_insurance: brand.askInsurance !== false,
+      booking: { notes_label: brand.copy.bookingNotesLabel || 'Observações', notes_hint: brand.copy.bookingNotesHint || '' },
       clinic: {
         name: st.clinic_name, phone: st.clinic_phone,
-        whatsapp: st.clinic_whatsapp, instagram: st.clinic_instagram, address: st.clinic_address || '',
+        whatsapp: st.clinic_whatsapp, instagram: st.clinic_instagram, address: st.clinic_address || '', whatsapp2: st.clinic_whatsapp2 || '', email: st.clinic_email || '',
       },
       show_insurances: !!brand.showInsurances,
       about: brand.about || null,
@@ -87,6 +91,8 @@ module.exports = function publicRoutes(db, brand) {
     const { email, notes, source, id, ...safe } = A.present({ ...row, status: 'cancelled' });
     res.json(safe);
   }));
+
+  if (brand.vertical === 'loja') r.use(require('./routes-loja').publicLoja(db, brand));
 
   return r;
 };

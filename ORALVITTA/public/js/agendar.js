@@ -8,6 +8,7 @@
   try { info = await api('/api/public/info'); }
   catch (e) { stage.append(h('div', { class: 'alert error' }, e.message)); return; }
 
+  const V = info.vocab, cap = t => t.charAt(0).toUpperCase() + t.slice(1);
   const state = {
     step: 1, service: null, month: info.today.slice(0, 7), days: [], date: null, slots: null, time: null,
     form: { name: '', phone: '', email: '', insurance: 'Particular', notes: '', consent: false },
@@ -43,8 +44,8 @@
 
   // ---------- 1. serviço ----------
   function stepService() {
-    stage.append(h('h2', {}, 'Qual serviço você procura?'),
-      h('p', { class: 'muted' }, 'A duração da consulta define quais horários aparecem como livres.'),
+    stage.append(h('h2', {}, info.vertical === 'loja' ? `Qual ${V.appt} você deseja?` : 'Qual serviço você procura?'),
+      h('p', { class: 'muted' }, `A duração da ${V.appt} define quais horários aparecem como livres.`),
       h('div', { class: 'choice-list' }, info.services.map(s =>
         h('button', {
           type: 'button', class: 'choice', 'aria-pressed': String(state.service?.id === s.id),
@@ -152,9 +153,9 @@
       h('div', { class: 'form-row' },
         h('label', { class: 'field' }, h('span', {}, 'Telefone / WhatsApp'), phoneInput),
         h('label', { class: 'field' }, h('span', {}, 'E-mail ', h('em', {}, '(opcional)')), bind('f-email', 'email')(h('input', { type: 'email', autocomplete: 'email', maxlength: 254 })))),
-      h('label', { class: 'field' }, h('span', {}, 'Convênio'), insurance),
-      h('label', { class: 'field' }, h('span', {}, 'Observações ', h('em', {}, '(opcional)')), bind('f-notes', 'notes')(h('textarea', { maxlength: 500, placeholder: 'Ex.: paciente é criança, está com dor, alergias…' }))),
-      h('label', { class: 'check' }, consent, h('span', {}, 'Concordo que a clínica use meus dados apenas para gerenciar este agendamento e entrar em contato sobre ele.')),
+      info.ask_insurance && h('label', { class: 'field' }, h('span', {}, 'Convênio'), insurance),
+      h('label', { class: 'field' }, h('span', {}, info.booking.notes_label + ' ', h('em', {}, '(opcional)')), bind('f-notes', 'notes')(h('textarea', { maxlength: 500, placeholder: info.booking.notes_hint || 'Ex.: paciente é criança, está com dor, alergias…' }))),
+      h('label', { class: 'check' }, consent, h('span', {}, 'Concordo que meus dados sejam usados apenas para gerenciar este agendamento e entrar em contato sobre ele.')),
       h('div', { class: 'nav-buttons' },
         h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => { state.step = 2; render(); } }, 'Voltar'), submit));
 
@@ -181,7 +182,7 @@
         } else showError(err, e.message);
       }
     });
-    stage.append(h('h2', {}, 'Seus dados'), h('p', { class: 'muted' }, 'Usamos o telefone para localizar e confirmar sua consulta.'), form);
+    stage.append(h('h2', {}, 'Seus dados'), h('p', { class: 'muted' }, `Usamos o telefone para localizar e confirmar sua ${V.appt}.`), form);
   }
 
   // ---------- 4. confirmação ----------
@@ -191,8 +192,8 @@
       `Olá! Acabei de agendar pelo site: ${r.service}, ${fmtNumeric(r.date)} às ${r.time}. Código ${r.code}. Nome: ${r.name}.`);
     stage.append(h('div', { class: 'ticket' },
       h('div', { class: 'check-ico', 'aria-hidden': 'true' }, '✓'),
-      h('h2', {}, 'Consulta agendada!'),
-      h('p', { class: 'muted' }, 'Guarde o código abaixo: com ele e seu telefone você acompanha ou cancela a consulta.'),
+      h('h2', {}, `${cap(V.appt)} agendada!`),
+      h('p', { class: 'muted' }, `Guarde o código abaixo: com ele e seu telefone você acompanha ou cancela a ${V.appt}.`),
       h('div', { class: 'code', 'aria-label': 'Código ' + r.code.split('').join(' ') }, r.code),
       h('dl', { class: 'details' },
         h('div', {}, h('dt', {}, 'Serviço'), h('dd', {}, r.service)),
@@ -202,9 +203,11 @@
         h('div', {}, h('dt', {}, 'Status'), h('dd', {}, h('span', { class: `badge ${r.status}` }, STATUS[r.status])))),
       h('div', { class: 'row-actions' },
         h('a', { class: 'btn btn-primary', href: wa, target: '_blank', rel: 'noopener' }, 'Avisar a clínica no WhatsApp'),
-        h('a', { class: 'btn btn-ghost', href: `/consulta?code=${r.code}` }, 'Acompanhar consulta'),
+        h('a', { class: 'btn btn-ghost', href: `/consulta?code=${r.code}` }, `Acompanhar ${V.appt}`),
         h('a', { class: 'btn btn-ghost', href: '/' }, 'Voltar ao início'))));
   }
 
-  render();
+  const wanted = Number(new URLSearchParams(location.search).get('service'));
+  const preset = info.services.find(x => x.id === wanted);
+  if (preset) { state.service = preset; state.step = 2; loadMonth(); } else render();
 })();

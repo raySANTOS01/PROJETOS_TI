@@ -8,7 +8,7 @@ const { HttpError, str, wrap } = require('./util');
 
 const STATUSES = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'];
 
-module.exports = function adminRoutes(db, brand) {
+module.exports = function adminRoutes(db, brand, opts = {}) {
   const r = express.Router();
   const loginLimit = auth.rateLimiter({ windowMs: 900_000, max: 10 });
 
@@ -27,7 +27,7 @@ module.exports = function adminRoutes(db, brand) {
 
   r.use(auth.requireAdmin(db));
 
-  r.get('/me', (req, res) => res.json(req.admin));
+  r.get('/me', (req, res) => res.json({ ...req.admin, vertical: brand.vertical, vocab: brand.vocab, ask_insurance: brand.askInsurance !== false }));
 
   r.post('/password', wrap((req, res) => {
     const user = db.prepare('SELECT * FROM admins WHERE id = ?').get(req.admin.id);
@@ -262,6 +262,8 @@ module.exports = function adminRoutes(db, brand) {
     db.prepare('DELETE FROM services WHERE id = ?').run(id);
     res.json({ ok: true, deactivated: false });
   }));
+
+  if (brand.vertical === 'loja') require('./routes-loja').adminLoja(r, db, brand, opts);
 
   return r;
 };

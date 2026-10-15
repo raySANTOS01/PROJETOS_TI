@@ -54,6 +54,16 @@ p { margin: 0; }
 .brand .word { font-weight: 300; font-size: 1.55rem; letter-spacing: -.01em; line-height: 1; }
 .brand .word small { display: block; font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; margin-top: 4px; color: var(--teal-500); font-weight: 500; }
 
+/* logo em texto (marcas com logo.style = "text") */
+.brand-text-wrap { color: var(--gold, var(--teal-600)); }
+.brand-text { display: inline-flex; align-items: center; gap: 10px; color: var(--gold, var(--teal-600)); line-height: 1; flex-wrap: wrap; }
+.brand-text .heart { width: 30px; height: 27px; color: var(--teal-500); flex: none; }
+.brand-text .script, .brand-text .rest { font-family: var(--font-accent, var(--font-display)); font-size: 2.1rem; color: var(--gold, var(--teal-600)); }
+.brand-text .rest { margin-left: -4px; }
+.sidebar .brand-text { gap: 6px 8px; }
+.sidebar .brand-text .heart { width: 24px; height: 22px; }
+.sidebar .brand-text .script, .sidebar .brand-text .rest { font-size: 1.6rem; margin: 0; }
+
 /* ---------- header ---------- */
 .site-header { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--mist-50) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 16px; }

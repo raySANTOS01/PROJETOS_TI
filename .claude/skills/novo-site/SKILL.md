@@ -7,7 +7,14 @@ description: Cria um site profissional com sistema por trás (painel admin) para
 
 Contexto: o repositório tem um modelo multi-projeto em `ORALVITTA/` (leia `ORALVITTA/docs/MODELO.md` e `ORALVITTA/brands/_modelo/LEIA-ME.md` primeiro). O usuário é brasileiro, fala português, quer resultado **profissional e com visual único para cada projeto**, e **pede para receber apenas os arquivos específicos**, nunca a pasta toda, a menos que peça.
 
+## 0. Verticais prontos
+`clinica` (agendamento) e `loja` (catálogo editável + pedido por WhatsApp + agendamento de homenagens + contatos + envio de fotos no painel). Florista, presentes, cestas, lojas em geral → `loja`. Veja a tabela em `ORALVITTA/docs/MODELO.md`.
+
 ## 1. Entrada (o que o usuário manda)
+- Prints colados no chat **não viram arquivos**: para usar logo e fotos de produtos, peça que o usuário **anexe os arquivos de imagem** (PNG/JPG). Enquanto isso, use `logo.style: "text"` e os marcadores de foto do catálogo (letra em fonte cursiva).
+- O usuário pode colar o código-fonte (HTML) do site atual do cliente: aproveite nome, telefones, endereço, horários, menu de produtos e textos institucionais dele; **nunca invente o que não está lá**.
+- Sites com mais de um WhatsApp/telefone: pergunte qual é o oficial (`clinic.whatsapp` = pedidos; `clinic.whatsapp2` = segundo contato).
+
 Nome, logo, imagens, produtos/serviços (e a categoria). Confira o que falta e peça **numa só mensagem**: telefone/WhatsApp, endereço, horário de funcionamento, Instagram, preços (se quiserem exibir), diferenciais, e se há logo em alta resolução. Se não responderem, use padrões editáveis e **liste o que foi suposição** no final. Nunca invente preços, prêmios, números ou depoimentos.
 
 ## 2. Criar o projeto
