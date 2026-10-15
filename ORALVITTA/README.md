@@ -14,6 +14,7 @@ npm test           # testes automatizados da agenda e da API
 ```
 
 Na **primeira execução** o terminal mostra o usuário (`admin`) e uma senha gerada. Anote e troque em *Painel → Configurações → Segurança*.
+Esqueceu a senha? Inicie uma vez com `RESET_ADMIN_PASSWORD="nova-senha-longa" npm start` (mínimo 10 caracteres) e depois volte a usar `npm start`.
 Para definir a senha inicial você mesmo: `ADMIN_PASSWORD="sua-senha-longa" npm start`.
 
 Variáveis opcionais: `BRAND` (qual clínica, veja abaixo), `PORT`, `DB_FILE` (caminho do banco, padrão `data/<marca>.db`), `TRUST_PROXY=true` (atrás de proxy/HTTPS, para cookie `Secure` e IP correto).

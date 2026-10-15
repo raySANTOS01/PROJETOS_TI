@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const { open } = require('./src/db');
-const { ensureAdmin } = require('./src/auth');
+const { ensureAdmin, resetAdminPassword } = require('./src/auth');
 const publicRoutes = require('./src/routes-public');
 const adminRoutes = require('./src/routes-admin');
 const { HttpError } = require('./src/util');
@@ -71,6 +71,10 @@ if (require.main === module) {
     if (created.generated) console.log(`Senha:   ${created.password}   (anote; troque em Painel > Conta)`);
     else console.log('Senha:   definida em ADMIN_PASSWORD');
     console.log('=================================\n');
+  }
+  if (process.env.RESET_ADMIN_PASSWORD) {
+    resetAdminPassword(db, process.env.RESET_ADMIN_PASSWORD);
+    console.log('Senha do usuário "admin" redefinida. Remova RESET_ADMIN_PASSWORD das próximas execuções.');
   }
   const port = Number(process.env.PORT) || 3000;
   createApp(db, brand).listen(port, () => console.log(`${brand.fullName} rodando em http://localhost:${port}  (painel: /admin)`));

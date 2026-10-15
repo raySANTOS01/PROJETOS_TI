@@ -70,6 +70,14 @@ function ensureAdmin(db) {
   return process.env.ADMIN_PASSWORD ? { username: 'admin', generated: false } : { username: 'admin', password, generated: true };
 }
 
+// Esqueceu a senha? Inicie com RESET_ADMIN_PASSWORD="nova-senha-longa" npm start (mín. 10 caracteres).
+function resetAdminPassword(db, password) {
+  if (String(password).length < 10) throw new Error('RESET_ADMIN_PASSWORD deve ter no mínimo 10 caracteres.');
+  const info = db.prepare("UPDATE admins SET password_hash = ? WHERE username = 'admin'").run(hashPassword(password));
+  db.prepare('DELETE FROM sessions').run(); // encerra sessões abertas
+  return info.changes > 0;
+}
+
 // Limitador simples em memória (por chave, ex.: IP) para frear tentativas de abuso.
 function rateLimiter({ windowMs, max }) {
   const hits = new Map();
@@ -85,5 +93,5 @@ function rateLimiter({ windowMs, max }) {
 
 module.exports = {
   hashPassword, verifyPassword, createSession, setCookie, destroySession,
-  requireAdmin, ensureAdmin, rateLimiter,
+  requireAdmin, ensureAdmin, resetAdminPassword, rateLimiter,
 };
